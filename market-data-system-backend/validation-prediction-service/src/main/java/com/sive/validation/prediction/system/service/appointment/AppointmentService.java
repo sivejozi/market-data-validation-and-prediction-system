@@ -1,3 +1,4 @@
+/*
 package com.sive.validation.prediction.system.service.appointment;
 
 import com.sive.validation.prediction.system.dto.appointment.AppointmentDTO;
@@ -12,3 +13,4 @@ public interface AppointmentService {
     AppointmentDTO findById(Long id);
     List<AppointmentDTO> findByCustomerName(String custerName);
 }
+*/

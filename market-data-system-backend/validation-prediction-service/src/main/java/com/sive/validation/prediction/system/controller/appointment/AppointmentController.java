@@ -1,3 +1,4 @@
+/*
 package com.sive.validation.prediction.system.controller.appointment;
 
 import com.sive.validation.prediction.system.dto.appointment.AppointmentDTO;
@@ -84,3 +85,4 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.updateAppointment(id, appointmentDTO, pushEvent));
     }
 }
+*/

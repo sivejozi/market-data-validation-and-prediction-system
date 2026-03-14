@@ -27,9 +27,9 @@ public class KafkaConsumerConfig {
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "notification-group");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "validation-prediction-group");
         props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.sive.bookingsystem.dto.message.MessageDTO");
+        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.sive.validation.prediction.system.dto.message.MessageDTO");
         return props;
     }
 

@@ -1,3 +1,4 @@
+/*
 package com.sive.validation.prediction.system.service.appointment.impl;
 
 import com.sive.validation.prediction.system.dto.appointment.AppointmentDTO;
@@ -7,8 +8,9 @@ import com.sive.validation.prediction.system.exception.appointment.AppointmentNo
 import com.sive.validation.prediction.system.model.appointment.AppointmentModel;
 import com.sive.validation.prediction.system.model.appointment.AppointmentStatus;
 import com.sive.validation.prediction.system.model.repository.appointment.AppointmentRepository;
-import com.sive.validation.prediction.system.service.appointment.AppointmentService;
-import com.sive.validation.prediction.system.service.event.bus.notification.NotificationProducerService;
+import com.sive.validation.prediction.system.service.appointment.AppointmentService;*/
+/**//*
+
 
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -149,3 +151,4 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 }
 
+*/

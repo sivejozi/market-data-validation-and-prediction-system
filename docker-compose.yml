@@ -5,15 +5,15 @@ services:
     image: postgres:16
     container_name: postgres
     environment:
-      POSTGRES_DB: bookingdb
-      POSTGRES_USER: booking_user
-      POSTGRES_PASSWORD: booking_pass
+      POSTGRES_DB: validation-prediction-db
+      POSTGRES_USER: validation-prediction-user
+      POSTGRES_PASSWORD: validation-prediction-pass
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U booking_user"]
+      test: ["CMD-SHELL", "pg_isready -U validation-prediction-user"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -65,89 +65,89 @@ services:
       - kafka
 
   # Backend Services
-  discovery-service:
-    build: ./booking-system-backend/discovery-service
-    container_name: discovery-service
-    ports:
-      - "8061:8061"
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8061/actuator/health" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 15s
+  #discovery-service:
+  #  build: ./market-data-system-backend/discovery-service
+  #  container_name: discovery-service
+  #  ports:
+  #    - "8061:8061"
+  #  healthcheck:
+  #    test: [ "CMD", "curl", "-f", "http://localhost:8061/actuator/health" ]
+  #    interval: 10s
+  #    timeout: 5s
+  #    retries: 10
+  #    start_period: 15s
 
-  user-service:
-    build: ./booking-system-backend/user-service
-    container_name: user-service
-    ports:
-      - "8081:8081"
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/bookingdb
-      - SPRING_DATASOURCE_USERNAME=booking_user
-      - SPRING_DATASOURCE_PASSWORD=booking_pass
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-service:8061/eureka/
-    depends_on:
-      discovery-service:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
+  #user-service:
+  #  build: ./market-data-system-backend/user-service
+  #  container_name: user-service
+  #  ports:
+  #    - "8081:8081"
+  #  environment:
+  #    - SPRING_PROFILES_ACTIVE=docker
+  #    - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/validation-prediction-db
+  #    - SPRING_DATASOURCE_USERNAME=validation-prediction-user
+  #    - SPRING_DATASOURCE_PASSWORD=validation-prediction-pass
+  #    - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-service:8061/eureka/
+  #  depends_on:
+  #    discovery-service:
+  #      condition: service_healthy
+  #    postgres:
+  #      condition: service_healthy
 
-  booking-service:
-    build: ./booking-system-backend/booking-service
-    container_name: booking-service
-    ports:
-      - "8080:8080"
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/bookingdb
-      - SPRING_DATASOURCE_USERNAME=booking_user
-      - SPRING_DATASOURCE_PASSWORD=booking_pass
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-service:8061/eureka/
-      - USER_SERVICE_URL=http://user-service:8081
-    depends_on:
-      discovery-service:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 15s
+  #validation-prediction-service:
+  #  build: ./market-data-system-backend/validation-prediction-service
+  #  container_name: validation-prediction-service
+  #  ports:
+  #    - "8080:8080"
+  #  environment:
+  #    - SPRING_PROFILES_ACTIVE=docker
+  #    - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/validation-prediction-db
+  #    - SPRING_DATASOURCE_USERNAME=validation-prediction-user
+  #    - SPRING_DATASOURCE_PASSWORD=validation-prediction-pass
+  #    - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+  #    - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-service:8061/eureka/
+  #    - USER_SERVICE_URL=http://user-service:8081
+  #  depends_on:
+  #    discovery-service:
+  #      condition: service_healthy
+  #    postgres:
+  #      condition: service_healthy
+  #  healthcheck:
+  #    test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+  #    interval: 10s
+  #    timeout: 5s
+  #    retries: 10
+  #    start_period: 15s
 
-  gateway-service:
-    build: ./booking-system-backend/gateway-service
-    container_name: gateway-service
-    ports:
-      - "8082:8082"
-    environment:
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-service:8061/eureka/
-    depends_on:
-      discovery-service:
-        condition: service_healthy
-      booking-service:
-        condition: service_healthy
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8082/actuator/health" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 15s
+  #gateway-service:
+  #  build: ./market-data-system-backend/gateway-service
+  #  container_name: gateway-service
+  #  ports:
+  #    - "8082:8082"
+  #  environment:
+  #    - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-service:8061/eureka/
+  #  depends_on:
+  #    discovery-service:
+  #      condition: service_healthy
+  #    validation-prediction-service:
+  #      condition: service_healthy
+  #  healthcheck:
+  #    test: [ "CMD", "curl", "-f", "http://localhost:8082/actuator/health" ]
+  #    interval: 10s
+  #    timeout: 5s
+  #    retries: 10
+  #    start_period: 15s
 
   # Frontend
-  booking-ui:
-    build:
-      context: ./booking-system-ui
-      dockerfile: Dockerfile
-    container_name: booking-ui
-    ports:
-      - "3000:3000"
-    environment:
-      - CHOKIDAR_USEPOLLING=true
+  #booking-ui:
+  #  build:
+  #    context: ./booking-system-ui
+  #    dockerfile: Dockerfile
+  #  container_name: booking-ui
+  #  ports:
+  #    - "3000:3000"
+  #  environment:
+  #    - CHOKIDAR_USEPOLLING=true
 
 volumes:
   pgdata:

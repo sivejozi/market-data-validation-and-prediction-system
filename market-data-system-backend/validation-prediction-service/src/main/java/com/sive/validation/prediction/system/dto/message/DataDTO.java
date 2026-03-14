@@ -1,23 +1,23 @@
 package com.sive.validation.prediction.system.dto.message;
 
-import com.sive.validation.prediction.system.dto.appointment.AppointmentDTO;
+import com.sive.validation.prediction.system.dto.markets.fx.FXRateDTO;
 
 public class DataDTO {
-    AppointmentDTO appointment;
+    FXRateDTO fxRateDTO;
     //there can be more objects here
 
-    public DataDTO(AppointmentDTO appointment) {
-        this.appointment = appointment;
+    public DataDTO(FXRateDTO fxRateDTO) {
+        this.fxRateDTO = fxRateDTO;
     }
 
     public DataDTO() {
     }
 
-    public AppointmentDTO getAppointment() {
-        return appointment;
+    public FXRateDTO getFxRateDTO() {
+        return fxRateDTO;
     }
 
-    public void setAppointment(AppointmentDTO appointment) {
-        this.appointment = appointment;
+    public void setFxRateDTO(FXRateDTO fxRateDTO) {
+        this.fxRateDTO = fxRateDTO;
     }
 }
