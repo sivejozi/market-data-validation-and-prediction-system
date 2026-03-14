@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.10.xsd">
+
+    <changeSet author="Sive" id="1" >
+        <createTable tableName="users">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="title" type="varchar(100)"/>
+            <column name="name" type="varchar(100)"/>
+            <column name="surname" type="varchar(100)"/>
+            <column name="email" type="varchar(100)"/>
+            <column name="cellphone" type="varchar(15)"/>
+            <column name="password" type="varchar(300)"/>
+            <column name="confirm_password" type="varchar(300)"/>
+        </createTable>
+
+        <!-- Create roles table -->
+        <createTable tableName="roles">
+            <column name="id" type="SERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+
+        <!-- Create user_roles join table -->
+        <createTable tableName="user_roles">
+            <column name="user_id" type="INTEGER">
+                <constraints nullable="false" referencedTableName="users" referencedColumnNames="id" foreignKeyName="fk_user_roles_users"/>
+            </column>
+            <column name="role_id" type="INTEGER">
+                <constraints nullable="false" referencedTableName="roles" referencedColumnNames="id" foreignKeyName="fk_user_roles_roles"/>
+            </column>
+        </createTable>
+
+        <!-- Define Primary Key for user_roles table -->
+        <addPrimaryKey tableName="user_roles" columnNames="user_id, role_id" constraintName="pk_user_roles"/>
+    </changeSet>
+
+    <changeSet id="2" author="Sive">
+        <insert tableName="roles">
+            <column name="name" value="ROLE_USER"/>
+        </insert>
+        <insert tableName="roles">
+            <column name="name" value="ROLE_ADMIN"/>
+        </insert>
+        <insert tableName="roles">
+            <column name="name" value="ROLE_CLIENT"/>
+        </insert>
+    </changeSet>
+
+    <changeSet author="Sive" id="3">
+        <insert tableName="users">
+            <column name="id" valueNumeric="1"/>
+            <column name="name" value="Admin"/>
+            <column name="surname" value="Admin"/>
+            <column name="email" value="sivejozi@gmail.com"/>
+            <column name="cellphone" value="0112587896"/>
+            <column name="password" value="$2a$10$ELAVktNV6irYR0OAG2VDJeODCruX1.vOvsNdkj6aQXXKBLHsZNRfG"/>
+            <column name="confirm_password" value="$2a$10$g63w7ARA/LDmxKj4/nPSJunG/6kc1JINRIbssJqR7wRv8.4I.y5Py"/>
+            <column name="title" value="Mr"/>
+        </insert>
+
+        <insert tableName="user_roles">
+            <column name="user_id" valueNumeric="1"/>
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'ROLE_ADMIN')"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>
