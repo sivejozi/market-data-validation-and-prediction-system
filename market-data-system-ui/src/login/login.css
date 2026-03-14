@@ -1,0 +1,78 @@
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  background: #f4f6fa;
+  color: #333;
+}
+
+.center-login {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.auth-inner {
+  background: #fff;
+  padding: 2.5rem 3rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  width: 400px;
+  max-width: 90%;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-inner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.auth-inner h3 {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-weight: 600;
+  color: #222;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.9rem;
+  color: #007bff;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+}
+
+.password-toggle:hover {
+  color: #0056b3;
+}
+
+.dx-button {
+  border-radius: 8px !important;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.dx-texteditor-input {
+  padding: 10px !important;
+  font-size: 1rem;
+}
+
+.dx-loadindicator {
+  display: block;
+  margin: 1.5rem auto 0;
+}
+
+@media (max-width: 500px) {
+  .auth-inner {
+    padding: 2rem;
+  }
+}
