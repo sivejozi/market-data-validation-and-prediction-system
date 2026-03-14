@@ -8,3 +8,4 @@
 .DS_Store
 **/logs/
 kafka-data/
+**/kafka-data/
