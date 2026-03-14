@@ -26,8 +26,6 @@ public class FxRateConsumerService {
 
     private void persistFXRate(MessageDTO message) {
         logger.info("Received message from Kafka: {}", message);
-
-        message.getData();
     }
 }
 
