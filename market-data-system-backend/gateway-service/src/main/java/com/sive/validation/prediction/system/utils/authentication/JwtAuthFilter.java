@@ -33,13 +33,16 @@ public class JwtAuthFilter implements WebFilter {
         String path = exchange.getRequest().getPath().value();
 
         // Skip public endpoints
-        if (path.startsWith("/auth") || path.startsWith("/booking/api/appointments/create") ||
+        if (path.startsWith("/auth") ||
                 path.startsWith("/swagger") ||
+                path.startsWith("/swagger-ui") ||
                 path.startsWith("/v3/api-docs") ||
+                path.startsWith("/validation/v3/api-docs") ||
+                path.startsWith("/user/v3/api-docs") ||
+                path.startsWith("/webjars") ||
                 path.startsWith("/actuator")) {
             return chain.filter(exchange);
         }
-
         // Resolve and validate JWT
         String token = jwtUtil.resolveToken(exchange.getRequest());
         if (token == null || !jwtUtil.validateToken(token)) {

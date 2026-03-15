@@ -39,10 +39,14 @@ public class SecurityConfig {
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers(
                                 "/auth/**",
-                                "/booking/api/appointments/create",
+                                "/api/fx-rates/**",
+                                "/validation/**",
+                                "/user/**",
                                 "/v3/api-docs/**",
-                                "/swagger-ui.html",
+                                "/validation/v3/api-docs",
+                                "/user/v3/api-docs",
                                 "/swagger-ui/**",
+                                "/swagger-ui.html",
                                 "/webjars/**",
                                 "/swagger-resources/**",
                                 "/actuator/**"

@@ -6,23 +6,27 @@
                         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.10.xsd">
 
     <changeSet id="1" author="Sive">
-        <createTable tableName="appointments" schemaName="public">
+        <createTable tableName="clean_fx_rates" schemaName="public">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
 
-            <column name="appointment_date_time" type="TIMESTAMP(6)"/>
-            <column name="branch" type="VARCHAR(255)"/>
-            <column name="confirmation_code" type="VARCHAR(255)"/>
-            <column name="created_at" type="TIMESTAMP(6)"/>
-            <column name="customer_email" type="VARCHAR(255)"/>
-            <column name="customer_name" type="VARCHAR(255)"/>
-            <column name="customer_phone" type="VARCHAR(255)"/>
-            <column name="reason" type="VARCHAR(255)"/>
-            <column name="status" type="VARCHAR(255)">
+            <column name="currency_pair" type="VARCHAR(10)">
                 <constraints nullable="false"/>
             </column>
+            <column name="date" type="TIMESTAMP(6)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rate" type="DECIMAL(19,6)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="lag1" type="DECIMAL(19,6)"/>
+            <column name="rolling_mean7" type="DECIMAL(19,6)"/>
+            <column name="rolling_std7" type="DECIMAL(19,6)"/>
+            <column name="rate_scaled" type="DECIMAL(19,6)"/>
+            <column name="created_at" type="TIMESTAMP(6)"/>
             <column name="updated_at" type="TIMESTAMP(6)"/>
         </createTable>
     </changeSet>
+
 </databaseChangeLog>

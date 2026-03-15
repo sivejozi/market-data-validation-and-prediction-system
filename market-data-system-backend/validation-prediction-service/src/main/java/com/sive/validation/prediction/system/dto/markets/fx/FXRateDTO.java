@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Data
@@ -14,7 +14,7 @@ import java.util.Objects;
 public class FXRateDTO {
     private String currencyPair;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDate date;
+    private LocalDateTime date;
     private Double rate;
     private Double lag1;
     private Double rollingMean7;
