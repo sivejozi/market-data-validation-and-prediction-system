@@ -1,6 +1,6 @@
 package com.sive.validation.prediction.system.dto.message;
 
-import com.sive.validation.prediction.system.dto.markets.fx.FXRateDTO;
+import com.sive.validation.prediction.system.dto.markets.fx.MarketRateDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DataDTO {
-    FXRateDTO fxRateDTO;
+    MarketRateDTO marketRateDTO;
     //there can be more objects here
 }

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.10.xsd">
+
+    <changeSet id="1" author="Sive">
+        <renameTable
+                oldTableName="clean_fx_rates"
+                newTableName="clean_market_rates"/>
+    </changeSet>
+
+    <changeSet id="2" author="Sive">
+        <renameColumn
+                tableName="clean_market_rates"
+                oldColumnName="currency_pair"
+                newColumnName="instrument"
+                columnDataType="VARCHAR(20)"/>
+    </changeSet>
+
+    <changeSet id="3" author="Sive">
+        <addColumn tableName="clean_market_rates">
+            <column
+                    name="asset_class"
+                    type="VARCHAR(10)"
+                    defaultValue="FX">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="4" author="Sive">
+        <update tableName="clean_market_rates">
+            <column name="asset_class" value="FX"/>
+            <where>asset_class IS NULL OR asset_class = ''</where>
+        </update>
+    </changeSet>
+</databaseChangeLog>

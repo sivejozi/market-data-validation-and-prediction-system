@@ -1,7 +1,7 @@
 package com.sive.validation.prediction.system.controller.markets.fx;
 
-import com.sive.validation.prediction.system.dto.markets.fx.FXRateDTO;
-import com.sive.validation.prediction.system.service.markets.fx.rates.FXRateService;
+import com.sive.validation.prediction.system.dto.markets.fx.MarketRateDTO;
+import com.sive.validation.prediction.system.service.markets.fx.rates.MarketRateService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,15 +12,15 @@ import java.util.Arrays;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/fx-rates")
-@Tag(name = "FX Rates", description = "FX Rate management endpoints")
-public class FXRateController {
+@RequestMapping("/api/market-rates")
+@Tag(name = "Market Rates", description = "Clean Market Rates management endpoints")
+public class MarketRateController {
 
-    private final FXRateService fxRateService;
+    private final MarketRateService marketRateService;
 
     @Autowired
-    public FXRateController(FXRateService fxRateService) {
-        this.fxRateService = fxRateService;
+    public MarketRateController(MarketRateService marketRateService) {
+        this.marketRateService = marketRateService;
     }
 
     private boolean isAdmin(String rolesHeader) {
@@ -31,65 +31,65 @@ public class FXRateController {
 
     // Needs auth + admin
     @GetMapping
-    public ResponseEntity<List<FXRateDTO>> findAll(
+    public ResponseEntity<List<MarketRateDTO>> findAll(
             @RequestHeader("X-User-Email") String email,
             @RequestHeader("X-User-Roles") String rolesHeader) {
 
         if (!isAdmin(rolesHeader)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        return ResponseEntity.ok(fxRateService.findAll());
+        return ResponseEntity.ok(marketRateService.findAll());
     }
 
     // Needs auth
     @GetMapping("/{id}")
-    public ResponseEntity<FXRateDTO> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(fxRateService.findById(id));
+    public ResponseEntity<MarketRateDTO> findById(@PathVariable Long id) {
+        return ResponseEntity.ok(marketRateService.findById(id));
     }
 
     // Needs auth
     @GetMapping("/search")
-    public ResponseEntity<List<FXRateDTO>> findByCurrencyPair(
-            @RequestParam String currencyPair) {
-        return ResponseEntity.ok(fxRateService.findByCurrencyPair(currencyPair));
+    public ResponseEntity<List<MarketRateDTO>> findByInstrument(
+            @RequestParam String instrument) {
+        return ResponseEntity.ok(marketRateService.findByInstrument(instrument));
     }
 
     // Needs auth + admin
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteFXRate(
+    public ResponseEntity<Void> deleteMarketRate(
             @PathVariable Long id,
             @RequestHeader("X-User-Roles") String rolesHeader) {
 
         if (!isAdmin(rolesHeader)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        fxRateService.deleteFXRate(id);
+        marketRateService.deleteMarketRate(id);
         return ResponseEntity.noContent().build();
     }
 
     // Needs auth + admin
     @PostMapping
-    public ResponseEntity<FXRateDTO> save(
-            @RequestBody FXRateDTO fxRateDTO,
+    public ResponseEntity<MarketRateDTO> save(
+            @RequestBody MarketRateDTO MarketRateDTO,
             @RequestHeader("X-User-Roles") String rolesHeader) {
 
         if (!isAdmin(rolesHeader)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(fxRateService.saveFXRate(fxRateDTO));
+                .body(marketRateService.saveMarketRate(MarketRateDTO));
     }
 
     // Needs auth + admin
     @PutMapping("/{id}")
-    public ResponseEntity<FXRateDTO> update(
+    public ResponseEntity<MarketRateDTO> update(
             @PathVariable Long id,
-            @RequestBody FXRateDTO fxRateDTO,
+            @RequestBody MarketRateDTO MarketRateDTO,
             @RequestHeader("X-User-Roles") String rolesHeader) {
 
         if (!isAdmin(rolesHeader)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        return ResponseEntity.ok(fxRateService.updateFXRate(id, fxRateDTO));
+        return ResponseEntity.ok(marketRateService.updateMarketRate(id, MarketRateDTO));
     }
 }

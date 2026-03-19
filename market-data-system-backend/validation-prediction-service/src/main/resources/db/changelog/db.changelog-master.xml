@@ -6,4 +6,5 @@
                         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.10.xsd">
 
     <include file="db/changelog/db.changelog-clean-fx-rates.xml"/>
+    <include file="db/changelog/db.changelog-clean-market-rates.xml"/>
 </databaseChangeLog>

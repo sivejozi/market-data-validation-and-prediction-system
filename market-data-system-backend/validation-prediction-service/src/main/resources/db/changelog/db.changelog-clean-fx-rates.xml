@@ -29,4 +29,10 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="2" author="Sive">
+        <addColumn tableName="clean_fx_rates" schemaName="public">
+            <column name="lag7" type="DECIMAL(19,6)"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
