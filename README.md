@@ -45,8 +45,8 @@ Each service is containerized using **Docker** and registered dynamically with *
 ---
 
 ### System Architecture
-
-![Architecture](images/architecture.png)
+0
+![Microservice_Arch2.png](images/Microservice_Arch2.png)
 
 ---
 
