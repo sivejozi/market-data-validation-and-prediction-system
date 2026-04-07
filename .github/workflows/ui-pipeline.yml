@@ -1,4 +1,4 @@
-name: UI Docker Build
+name: UI Docker Build And Push
 
 on:
   push:
@@ -27,6 +27,6 @@ jobs:
           context: ./market-data-system-ui
           push: true
           tags: |
-            ghcr.io/sivejozi/market-data-ui:latest
-            ghcr.io/sivejozi/market-data-ui:${{ github.sha }}
+            ghcr.io/sivejozi/market-data-system-ui:latest
+            ghcr.io/sivejozi/market-data-system-ui:${{ github.sha }}
           platforms: linux/amd64
