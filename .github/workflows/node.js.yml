@@ -24,4 +24,4 @@ jobs:
         with:
           context: ./market-data-system-ui
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/market-data-system-ui:latest
+          tags: ghcr.io/sivejozi/market-data-system-ui:latest
