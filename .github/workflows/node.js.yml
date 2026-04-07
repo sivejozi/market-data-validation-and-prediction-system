@@ -32,4 +32,4 @@ jobs:
       - run: npm run build --if-present
 
       - name: Build Docker image
-        run: docker build -t market-data-ui ./market-data-system-ui
+        run: docker build -t market-data-ui .
