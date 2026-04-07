@@ -236,4 +236,109 @@ All api calls go via gateway (port 8082), routing handled in the gateway service
    curl --location --request DELETE 'http://localhost:8082/api/appointments/10'
 
 
+# MarketGuard — ML Market Data Validation & Prediction System
+
+## Local Development Setup
+
+### Prerequisites
+- Docker Desktop running
+- Homebrew installed
+- kubectl installed (`brew install kubectl`)
+
+---
+
+### Step 1 — Start Local Kubernetes Cluster (Minikube)
+
+```bash
+# Install minikube
+brew install minikube
+
+# Start cluster with sufficient resources
+minikube start --cpus=4 --memory=4096
+
+# Verify cluster is running
+kubectl get nodes
+```
+
+---
+
+### Step 2 — Install ArgoCD
+
+```bash
+# Create ArgoCD namespace
+kubectl create namespace argocd
+
+# Install ArgoCD (use server-side apply to avoid CRD size issues)
+kubectl apply -n argocd \
+  -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml \
+  --server-side \
+  --force-conflicts
+
+# Wait for all pods to be ready
+kubectl wait --for=condition=Ready pods --all -n argocd --timeout=120s
+
+# Verify pods are running
+kubectl get pods -n argocd
+```
+
+---
+
+### Step 3 — Access ArgoCD UI
+
+```bash
+# Port forward ArgoCD server
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+# Get initial admin password
+kubectl -n argocd get secret argocd-initial-admin-secret \
+  -o jsonpath="{.data.password}" | base64 -d
+```
+
+Open browser at `https://localhost:8080`
+
+
+> ⚠️ Change the admin password after first login:
+> ArgoCD UI → User Info → Update Password
+
+---
+
+### Step 4 — Stop / Resume Cluster
+
+```bash
+# Stop cluster (saves resources when not in use)
+minikube stop
+
+# Resume cluster
+minikube start
+
+# Delete cluster completely
+minikube delete
+```
+
+---
+
+## Production Deployment (AWS)
+
+> Planned for Phase 2 — Bloomberg Terminal evaluation
+> 
+> ---
+
+## Services
+
+| Service | Language | Port |
+|---|---|---|
+| API Gateway | Java Spring Boot | 8082 |
+| User Service | Java Spring Boot | 8081 |
+| Validation & Prediction Service | Java Spring Boot | 8080 |
+| Alerting Service | Java Spring Boot | 8083 |
+| Python ML Service | Python FastAPI | 8000 |
+| Python Preprocessing Service | Python | — |
+| MarketGuard UI | React + Nginx | 80 |
+
+---
+
+## Container Registry
+
+Images are hosted on GitHub Container Registry (ghcr.io):
+
 
