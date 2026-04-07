@@ -39,7 +39,7 @@ public class SecurityConfig {
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers(
                                 "/auth/**",
-                                "/api/fx-rates/**",
+                                "/api/market-rates/**",
                                 "/validation/**",
                                 "/user/**",
                                 "/v3/api-docs/**",

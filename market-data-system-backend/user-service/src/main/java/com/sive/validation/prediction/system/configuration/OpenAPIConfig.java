@@ -26,16 +26,6 @@ public class OpenAPIConfig {
                         .description("API for user authentication and management"))
                 .servers(List.of(
                         new Server().url(gatewayUrl).description("Gateway")
-                ))
-                .components(new Components()
-                        .addSecuritySchemes("bearerAuth",
-                                new SecurityScheme()
-                                        .type(SecurityScheme.Type.HTTP)
-                                        .scheme("bearer")
-                                        .bearerFormat("JWT")
-                                        .description("Enter your JWT token")
-                        ))
-                .addSecurityItem(new SecurityRequirement()
-                        .addList("bearerAuth"));
+                ));
     }
 }

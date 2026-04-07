@@ -1,28 +1,30 @@
-import 'devextreme/dist/css/dx.light.css';
-import { Component } from 'react'
-import './App.css'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import Login from './login/login'
-import Appointment from './booking/appointment-booking'
-import Bookings from './bookings/bookings';
+import { useState } from "react";
+import LoginScreen from "./login/LoginScreen";
+import Dashboard from "./dashboard/Dashboard";
+import { ValidateRate, Historical, Models, Alerts, Settings } from "./screens";
 
-class App extends Component {
-  render() {
-    return (
-      <Router>
-        <div className="App">
-          <div>
-            <Routes>
-              <Route exact path="/" element={<Appointment />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/appointment" element={<Appointment />} />
-              <Route path="/bookings" element={<Bookings />} />
-            </Routes>
-          </div>
-        </div>
-      </Router>
-    )
+export default function App() {
+  const [loggedIn, setLoggedIn]   = useState(false);
+  const [activeNav, setActiveNav] = useState("dashboard");
+
+  if (!loggedIn) {
+    return <LoginScreen onLogin={() => setLoggedIn(true)} />;
   }
-}
 
-export default App
+  const commonProps = {
+    activeNav,
+    onNavigate: setActiveNav,
+    onLogout: () => { setLoggedIn(false); setActiveNav("dashboard"); },
+  };
+
+  const screens = {
+    dashboard:  <Dashboard  {...commonProps} />,
+    validate:   <ValidateRate {...commonProps} />,
+    historical: <Historical {...commonProps} />,
+    models:     <Models     {...commonProps} />,
+    alerts:     <Alerts     {...commonProps} />,
+    settings:   <Settings   {...commonProps} />,
+  };
+
+  return screens[activeNav] || screens.dashboard;
+}
