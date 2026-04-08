@@ -25,19 +25,7 @@ function PlaceholderScreen({ title, description, icon, activeNav, onNavigate, on
 }
 
 export { default as ValidateRate } from "./validate/ValidateRate";
-
-export function Historical({ activeNav, onNavigate, onLogout }) {
-  return <PlaceholderScreen title="Historical Analysis" description="Anomaly history and trend analysis per instrument" icon="📈" activeNav={activeNav} onNavigate={onNavigate} onLogout={onLogout}/>;
-}
-
-export function Models({ activeNav, onNavigate, onLogout }) {
-  return <PlaceholderScreen title="Model Performance" description="Detailed metrics, confusion matrices and R² charts" icon="🤖" activeNav={activeNav} onNavigate={onNavigate} onLogout={onLogout}/>;
-}
-
-export function Alerts({ activeNav, onNavigate, onLogout }) {
-  return <PlaceholderScreen title="Alerts" description="Full alert history with filtering and severity breakdown" icon="🔔" activeNav={activeNav} onNavigate={onNavigate} onLogout={onLogout}/>;
-}
-
-export function Settings({ activeNav, onNavigate, onLogout }) {
-  return <PlaceholderScreen title="Settings" description="System configuration and user preferences" icon="⚙️" activeNav={activeNav} onNavigate={onNavigate} onLogout={onLogout}/>;
-}
+export { default as Historical   } from "./historical/Historical";
+export { default as Models       } from "./models/Models";
+export { default as Alerts       } from "./alerts/Alerts";
+export { default as Settings     } from "./settings/Settings";
