@@ -72,7 +72,6 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ghcr.io/sivejozi/discovery-service:latest
             ghcr.io/sivejozi/discovery-service:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -91,7 +90,7 @@ jobs:
           repository: sivejozi/market-data-system-gitops
           token: ${{ secrets.GHCR_PAT }}
 
-      - name: Update image tag
+      - name: Update Image Tag
         run: |
           sed -i "s|ghcr.io/sivejozi/discovery-service:.*|ghcr.io/sivejozi/discovery-service:${{ github.sha }}|g" \
             discovery-service/deployment.yaml
