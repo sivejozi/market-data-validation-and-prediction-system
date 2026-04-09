@@ -22,7 +22,7 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'temurin'
           cache: maven
 
@@ -72,7 +72,6 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ghcr.io/sivejozi/gateway-service:latest
             ghcr.io/sivejozi/gateway-service:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -91,7 +90,7 @@ jobs:
           repository: sivejozi/market-data-system-gitops
           token: ${{ secrets.GHCR_PAT }}
 
-      - name: Update image tag
+      - name: Update Image Tag
         run: |
           sed -i "s|ghcr.io/sivejozi/gateway-service:.*|ghcr.io/sivejozi/gateway-service:${{ github.sha }}|g" \
             gateway-service/deployment.yaml
@@ -101,5 +100,5 @@ jobs:
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add gateway-service/deployment.yaml
-          git commit -m "Update gateway-service image to ${{ github.sha }}"
+          git commit -m "chore: update gateway-service image to ${{ github.sha }}"
           git push
