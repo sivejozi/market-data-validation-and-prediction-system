@@ -1,327 +1,46 @@
-# Market Data Validation and Prediction System
+# MarketGuard — ML Market Data Validation & Prediction System
+
+## Overview
+
+MarketGuard is a cloud-native, machine learning-driven framework for
+automated market data validation and prediction. The system validates
+incoming financial market rates in real time using an ensemble of
+supervised, unsupervised, and self-supervised ML models — flagging
+anomalies and publishing alerts via Apache Kafka.
+
+---
 
 ## Frontend
 
-The frontend is built using **React** and **Node.js** (Node version **v25.1.0**) for building and running the application.
+The frontend is built using **React 19** and served via **Nginx** in
+production. It provides a real-time dashboard for monitoring instrument
+status, validating rates, and viewing anomaly alerts.
+
+### Screens
+- **Dashboard** — instrument status, recent alerts, model performance
+- **Validate Rate** — real-time single rate validation across all 3 models
+- **Historical Analysis** — anomaly history and trends per instrument
+- **Model Performance** — detailed metrics, R² and F1 scores
+- **Alerts** — full alert history with severity filtering
+- **Settings** — instrument and threshold configuration
+
+### Running Locally
+
+```bash
+cd market-data-system-ui
+npm install
+npm start
+```
+
+Open at `http://localhost:3000`
 
 ---
 
-Landing Page
+## System Architecture
 
-The landing screen is the Appointment Booking page where users can book an appointment will be available on http://localhost:3000
-![landingPage.png](images/landingPage.png)
-
-Admin Login
-
-Admins can log in at: http://localhost:3000/login. A preloaded admin user is available for testing purposes: Username: sivejozi@gmail.com and
-Password: test
-![adminLogin.png](images/adminLogin.png)
-Bookings Page
-
-Once logged in, admins can view, update, and delete appointments on the bookings page: http://localhost:3000/bookings
-![bookings.png](images/bookings.png)
-
-On this page:
-
-* Admins can edit an appointment directly in the grid popup editor.
-* Admins can delete any appointment using the delete button.
-* Both actions require the user to have the ROLE_ADMIN authority.
-* These role-based access checks are enforced by the backend service.
-
-Tech Stack Summary
-
-* React 19
-* DevExtreme DataGrid for appointment management UI
-* JWT Authentication integrated with backend
-* Fetch API for secured REST API communication
-* Node.js v25.1.0 for local development and build environment
-
-## Backend
-
-The backend is built using **Java Spring Boot** following a **microservice architecture** pattern and events based,
-for intercommunication between the microservices.
-Each service is containerized using **Docker** and registered dynamically with **Eureka Discovery Server**.
-
----
-
-### System Architecture
-0
 ![Microservice_Arch2.png](images/Microservice_Arch2.png)
 
 ---
-
-### Component Descriptions
-
-#### **1. Gateway Service**
-- Acts as the single entry point for all client requests.
-- Routes API calls to the appropriate microservice.
-- Handles:
-    - Authentication & Authorization (via JWT)
-    - Security policies
-    - CORS configuration
-    - Role-based access control
-    - Monitoring & routing
-- Built using **Spring Cloud Gateway**.
-
----
-
-#### **2. Discovery Service (Eureka Server)**
-- Registers and manages all microservices dynamically.
-- Enables **service discovery** and load balancing.
-- Allows other microservices to communicate without hardcoding URLs.
-
----
-
-#### **4. User Service**
-- Handles **user registration**, **authentication**, and **authorization**.
-- Manages user roles (e.g., `ROLE_ADMIN`, `ROLE_USER`).
-- Provides JWT tokens for secure access via the Gateway.
-- Registered as an **Eureka client**.
-
----
-
-#### **5. Booking Service**
-- Core business service responsible for managing **appointments**.
-- Supports CRUD operations for bookings.
-- Publishes booking-related events to **Kafka**.
-- Registered as an **Eureka client**.
-
----
-
-#### **6. Notification Service**
-- Listens to **Kafka topics** (e.g., `booking-events`) and sends notifications or triggers asynchronous tasks.
-- Example: Sends an email or confirmation event when a booking is created or updated.
-- Registered as an **Eureka client**.
-- Currently, the system logs out a simulated email, that looks like:
-
-![simulatedEmail.png](images/simulatedEmail.png)
----
-
-#### **7. Database (PostgreSQL)**
-- Stores persistent booking and user data.
-- Accessed mainly by the User and Booking Services.
-- Uses JPA/Hibernate ORM for data access.
-
----
-
-#### **9. Kafka (Event Streaming Platform)**
-- Used for asynchronous communication between services.
-- Ensures scalability and decoupling through **event-driven architecture**.
-- Booking Service → publishes events  
-  Notification Service → consumes and processes them
-
----
-
-### Tech Stack Summary
-
-- **Java 24**
-- **Spring Boot 3.x**
-- **Spring Cloud (Eureka, Gateway, Config)**
-- **PostgreSQL** (Relational Database)
-- **Apache Kafka** (Event streaming)
-- **Docker** (Containerization)
-- **Maven** (Build automation)
-- **JWT** (Authentication)
-
----
-
-### Future Work
-
-#### **1. Config Server**
-- Centralized configuration management for all microservices.
-- Allows configuration files to be version-controlled and updated without redeploying services.
-- Ideal for managing environment-based configurations (e.g., dev, test, prod).
-
----
-
-#### **2. Cache (Redis)**
-- Used for caching frequently accessed data.
-- Improves performance by reducing database load.
-- Can be used to cache tokens, user sessions, or booking lookups.
-
-### Building and Running the System Using Docker
-
-1. Build each microservice using maven
-
-    ```bash
-   mvn clean install -U
-
-2. Change directory to root folder "appointment-booking"
-
-    ```bash
-   docker compose up -d
-
-This will set up all that is needed for the system(postgres-db, kafka, kafka-ui, runs all the backend microservices as well
-as the system's frontend app)
-
-![dockerCompose.png](images/dockerCompose.png)
-
-2. Eureka server available at: http://localhost:8061/
-   ![architecture.png](images/eureka.png)
-
-3. To stop the app
-
-   ```bash
-   docker compose down
-
-### API's
-
-All api calls go via gateway (port 8082), routing handled in the gateway service.
-1. Login:
-
-   curl --location 'http://localhost:8082/auth/login' \
-   --header 'Content-Type: application/json' \
-   --data-raw '{
-   "email": "sivejozi@gmail.com",
-   "password": "test"
-   }'
-
-
-2. User registration:
-
-   curl --location 'http://localhost:8082/auth/register' \
-   --header 'Content-Type: application/json' \
-   --data-raw '{
-   "title": "Mr",
-   "name": "Sive",
-   "surname": "Jozi",
-   "email": "sivejozi@gmail.com",
-   "cellphone": "0831234567",
-   "password": "test",
-   "confirmPassword": "test"
-   }
-   '
-
-
-3. All appointments: (needs auth)
-
-   curl --location 'http://localhost:8082/booking/api/appointments' \
-   --header 'Authorization: Bearer eyJhbG....'
-
-
-4. Create Appointment:
-
-   curl --location 'http://localhost:8082/booking/api/appointments/create' \
-   --header 'Content-Type: application/json' \
-   --data-raw '    {
-   "customerName": "Hugh Jones2",
-   "customerEmail": "hugh2@email.com",
-   "customerPhone": "0112513698",
-   "branch": "Maclear",
-   "appointmentDateTime": "2025-11-21T12:00:00",
-   "reason": "Another Favour",
-   "status": "SCHEDULED"
-   }'
-
-
-5. Update Appointment:
-
-   curl --location --request PUT 'http://localhost:8082/booking/api/appointments/update/1' \
-   --header 'Content-Type: application/json' \
-   --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJST0xFX0FETUlOIl0sInN1YiI6InNpdmVqb3ppQGdtYWlsLmNvbSIsImlhdCI6MTc2MTkxNDY2MiwiZXhwIjoxNzYxOTE4MjYyfQ.p5nG1XmTfToJ-BuGD4PaJazOZRLQyWRbzjdK1Azar7s' \
-   --data-raw '    {
-   "customerName": "Sive Jozi",
-   "customerEmail": "sive.jozi@example.com",
-   "customerPhone": "+27 82 555 1234",
-   "branch": "Sandton City Branch",
-   "appointmentDateTime": "2025-10-26T10:30:00",
-   "reason": "New account opening2",
-   "status": "CONFIRMED",
-   "confirmationCode": "ABC12345"
-   }'
-
-
-6. Delete Appointment:
-
-   curl --location --request DELETE 'http://localhost:8082/api/appointments/10'
-
-
-# MarketGuard — ML Market Data Validation & Prediction System
-
-## Local Development Setup
-
-### Prerequisites
-- Docker Desktop running
-- Homebrew installed
-- kubectl installed (`brew install kubectl`)
-
----
-
-### Step 1 — Start Local Kubernetes Cluster (Minikube)
-
-```bash
-# Install minikube
-brew install minikube
-
-# Start cluster with sufficient resources
-minikube start --cpus=4 --memory=4096
-
-# Verify cluster is running
-kubectl get nodes
-```
-
----
-
-### Step 2 — Install ArgoCD
-
-```bash
-# Create ArgoCD namespace
-kubectl create namespace argocd
-
-# Install ArgoCD (use server-side apply to avoid CRD size issues)
-kubectl apply -n argocd \
-  -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml \
-  --server-side \
-  --force-conflicts
-
-# Wait for all pods to be ready
-kubectl wait --for=condition=Ready pods --all -n argocd --timeout=120s
-
-# Verify pods are running
-kubectl get pods -n argocd
-```
-
----
-
-### Step 3 — Access ArgoCD UI
-
-```bash
-# Port forward ArgoCD server
-kubectl port-forward svc/argocd-server -n argocd 8080:443
-
-# Get initial admin password
-kubectl -n argocd get secret argocd-initial-admin-secret \
-  -o jsonpath="{.data.password}" | base64 -d
-```
-
-Open browser at `https://localhost:8080`
-
-
-> ⚠️ Change the admin password after first login:
-> ArgoCD UI → User Info → Update Password
-
----
-
-### Step 4 — Stop / Resume Cluster
-
-```bash
-# Stop cluster (saves resources when not in use)
-minikube stop
-
-# Resume cluster
-minikube start
-
-# Delete cluster completely
-minikube delete
-```
-
----
-
-## Production Deployment (AWS)
-
-> Planned for Phase 2 — Bloomberg Terminal evaluation
-> 
-> ---
 
 ## Services
 
@@ -337,8 +56,104 @@ minikube delete
 
 ---
 
+## ML Models
+
+| Layer | Model | Paradigm |
+|---|---|---|
+| Prediction | Linear Regression | Supervised |
+| Prediction | Gradient Boosting Regressor | Supervised |
+| Prediction | Random Forest Regressor | Supervised |
+| Validation | K-Means Clustering | Unsupervised |
+| Validation | Autoencoder | Self-Supervised |
+| Validation | Random Forest Classifier | Supervised |
+
+---
+
 ## Container Registry
 
-Images are hosted on GitHub Container Registry (ghcr.io):
+Images are hosted on GitHub Container Registry:
+
+---
+
+## Local Kubernetes Setup (Minikube)
+
+### Prerequisites
+- Docker Desktop running
+- Homebrew installed
+- `kubectl` installed — `brew install kubectl`
+
+### Step 1 — Start Cluster
+
+```bash
+brew install minikube
+minikube start --cpus=4 --memory=4096
+kubectl get nodes
+```
+
+### Step 2 — Install ArgoCD
+
+```bash
+kubectl create namespace argocd
+
+kubectl apply -n argocd \
+  -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml \
+  --server-side \
+  --force-conflicts
+
+kubectl wait --for=condition=Ready pods --all -n argocd --timeout=120s
+```
+
+### Step 3 — Access ArgoCD UI
+
+```bash
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+kubectl -n argocd get secret argocd-initial-admin-secret \
+  -o jsonpath="{.data.password}" | base64 -d
+```
+
+Open `https://localhost:8080` — username: `admin`
+
+> ⚠️ Change the admin password after first login
+
+### Step 4 — Access MarketGuard UI
+
+```bash
+kubectl port-forward svc/marketguard-ui -n marketguard 3000:80
+```
+
+Open `http://localhost:3000`
+
+### Step 5 — Stop / Resume Cluster
+
+```bash
+minikube stop    # stop
+minikube start   # resume
+minikube delete  # delete completely
+```
+
+---
+
+## Production Deployment (AWS)
 
 
+> Phase 2 — Bloomberg Terminal high-frequency data evaluation
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 19, Nginx |
+| Backend | Java 24, Spring Boot 3.x |
+| ML Service | Python FastAPI, scikit-learn, TensorFlow |
+| Messaging | Apache Kafka |
+| Database | PostgreSQL |
+| Cache | Redis |
+| Auth | JWT |
+| Containerisation | Docker |
+| Orchestration | Kubernetes (Minikube / k3s) |
+| GitOps | ArgoCD |
+| Registry | GitHub Container Registry (ghcr.io) |
+| Build | Maven, npm |
