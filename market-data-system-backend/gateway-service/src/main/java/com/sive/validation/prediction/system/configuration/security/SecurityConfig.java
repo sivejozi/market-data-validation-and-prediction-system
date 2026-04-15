@@ -40,11 +40,13 @@ public class SecurityConfig {
                         .pathMatchers(
                                 "/auth/**",
                                 "/api/market-rates/**",
+                                "/alerts/**",
                                 "/validation/**",
                                 "/user/**",
                                 "/v3/api-docs/**",
                                 "/validation/v3/api-docs",
                                 "/user/v3/api-docs",
+                                "/alerts/v3/api-docs",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/webjars/**",

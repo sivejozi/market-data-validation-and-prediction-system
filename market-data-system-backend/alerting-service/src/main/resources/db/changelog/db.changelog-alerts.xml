@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.10.xsd">
+
+    <changeSet author="Sive" id="1">
+        <createTable tableName="alerts">
+
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="instrument" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="date" type="VARCHAR(30)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="rate" type="DECIMAL(18,6)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="severity" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="models_agreed" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="total_models" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="flagged_models" type="VARCHAR(255)"/>
+
+            <column name="consensus" type="VARCHAR(50)"/>
+
+            <column name="received_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

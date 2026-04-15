@@ -39,6 +39,7 @@ public class JwtAuthFilter implements WebFilter {
                 path.startsWith("/v3/api-docs") ||
                 path.startsWith("/validation/v3/api-docs") ||
                 path.startsWith("/user/v3/api-docs") ||
+                path.startsWith("/alerts/v3/api-docs") ||
                 path.startsWith("/webjars") ||
                 path.startsWith("/actuator")) {
             return chain.filter(exchange);
