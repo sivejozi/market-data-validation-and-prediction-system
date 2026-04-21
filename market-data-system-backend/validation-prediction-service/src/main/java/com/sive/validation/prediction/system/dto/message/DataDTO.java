@@ -1,7 +1,7 @@
 package com.sive.validation.prediction.system.dto.message;
 
-import com.sive.validation.prediction.system.dto.markets.fx.MarketRateDTO;
-import com.sive.validation.prediction.system.dto.markets.fx.ValidationAlertDTO;
+import com.sive.validation.prediction.system.dto.markets.rates.MarketRateDTO;
+import com.sive.validation.prediction.system.dto.markets.rates.ValidationAlertDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

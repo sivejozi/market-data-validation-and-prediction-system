@@ -202,7 +202,7 @@ export default function ValidateRate({ activeNav, onNavigate, onLogout }) {
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        `${API_BASE}/api/market-rates/validate`,
+        `${API_BASE}/api/market-rates/anomaly`,
         {
           method: "POST",
           headers: {
@@ -225,23 +225,22 @@ export default function ValidateRate({ activeNav, onNavigate, onLogout }) {
       const data = await res.json();
 
       // Map model results by model name
-      const mapped = {};
-      (data.modelResults || []).forEach(m => {
-        mapped[m.model] = {
+        const mapped = {};
+        (data.modelResults || []).forEach(m => {
+            mapped[m.model] = {
                 ...m,
-                isAnomaly: m.anomaly ?? m.isAnomaly
+                isAnomaly: m.isAnomaly ?? m.anomaly
             };
-      });
-      setResults(mapped);
+        });
+        setResults(mapped);
 
-      // Set consensus from Java response
-      setConsensus({
-            isAnomaly:      data.anomaly ?? data.isAnomaly,
+        setConsensus({
+            isAnomaly:      data.isAnomaly ?? data.anomaly,
             modelsAgreed:   data.modelsAgreed,
             totalModels:    data.totalModels,
             consensus:      data.consensus,
             alertPublished: data.alertPublished,
-      });
+        });
 
     } catch (err) {
       setError(err.message);

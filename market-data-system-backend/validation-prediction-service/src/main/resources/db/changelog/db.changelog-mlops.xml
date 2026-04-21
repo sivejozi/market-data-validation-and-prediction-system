@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.10.xsd">
+
+    <changeSet author="Sive" id="1">
+        <createTable tableName="model_runs">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="instrument" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="model" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="model_version" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="run_date" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total_rates" type="INTEGER"/>
+            <column name="total_anomalies" type="INTEGER"/>
+            <column name="anomaly_rate" type="DECIMAL(10,4)"/>
+            <column name="threshold" type="DECIMAL(18,6)"/>
+            <column name="is_anomaly_flagged" type="BOOLEAN"/>
+            <column name="triggered_by" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>
