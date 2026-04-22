@@ -5,10 +5,11 @@ import Ticker from "./Ticker";
 const navItems = [
   { id:"dashboard",  label:"Dashboard",  icon:"▦" },
   { id:"validate",   label:"Validate",   icon:"⚡" },
+  { id:"prediction", label:"Prediction", icon:"📈" },
   { id:"historical", label:"Historical", icon:"📈" },
   { id:"models",     label:"Models",     icon:"🤖" },
   { id:"alerts",     label:"Alerts",     icon:"🔔" },
-  { id:"settings",   label:"Settings",   icon:"⚙️" },
+  //{ id:"settings",   label:"Settings",   icon:"⚙️" },
 ];
 
 export default function NavBar({ activeNav, onNavigate, onLogout }) {

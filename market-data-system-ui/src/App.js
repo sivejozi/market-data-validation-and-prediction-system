@@ -1,7 +1,7 @@
 import { useState } from "react";
 import LoginScreen from "./login/LoginScreen";
 import Dashboard from "./dashboard/Dashboard";
-import { ValidateRate, Historical, Models, Alerts, Settings } from "./screens";
+import { ValidateRate, Historical, Models, Alerts, Settings, Prediction } from "./screens";
 
 export default function App() {
   const [loggedIn, setLoggedIn]   = useState(false);
@@ -24,6 +24,7 @@ export default function App() {
     models:     <Models     {...commonProps} />,
     alerts:     <Alerts     {...commonProps} />,
     settings:   <Settings   {...commonProps} />,
+    prediction:   <Prediction   {...commonProps} />,
   };
 
   return screens[activeNav] || screens.dashboard;
