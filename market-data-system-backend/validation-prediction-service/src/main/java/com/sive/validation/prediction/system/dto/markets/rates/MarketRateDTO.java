@@ -23,6 +23,7 @@ public class MarketRateDTO {
     private Double rollingMean7;
     private Double rollingStd7;
     private Double rateScaled;
+    private String source;
 
     @Override
     public boolean equals(Object o) {
@@ -46,6 +47,7 @@ public class MarketRateDTO {
                 ", rollingMean7=" + rollingMean7 +
                 ", rollingStd7=" + rollingStd7 +
                 ", rateScaled=" + rateScaled +
+                ", source=" + source +
                 '}';
     }
 }

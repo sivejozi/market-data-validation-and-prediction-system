@@ -35,6 +35,7 @@ public class MarketRateModel implements Serializable {
     private Double rollingMean7;
     private Double rollingStd7;
     private Double rateScaled;
+    private String source;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -64,6 +65,7 @@ public class MarketRateModel implements Serializable {
                 ", rateScaled=" + rateScaled +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
+                ", source=" + source +
                 '}';
     }
 }

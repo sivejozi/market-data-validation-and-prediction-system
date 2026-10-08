@@ -8,4 +8,5 @@
     <include file="db/changelog/db.changelog-clean-fx-rates.xml"/>
     <include file="db/changelog/db.changelog-clean-market-rates.xml"/>
     <include file="db/changelog/db.changelog-mlops.xml"/>
+    <include file="db/changelog/db.changelog-add-source-to-clean-market-rates.xml"/>
 </databaseChangeLog>

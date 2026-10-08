@@ -35,13 +35,15 @@ public class MarketRateAnomalyServiceImpl {
         this.modelRunService = modelRunService;
     }
 
-    @Cacheable(value = "kmeans", key = "#instrument")
+    // ── K-Means ───────────────────────────────────────────────
+    @Cacheable(value = "kmeans", key = "#instrument + '_' + #source")
     public MarketRateClusterResult detectAnomalies(
-            String instrument, int numClusters, double threshold) {
+            String instrument, int numClusters,
+            double threshold, String source) {
 
-        List<MarketRateDTO> rates = fetchRates(instrument);
+        List<MarketRateDTO> rates = fetchRates(instrument, source);
 
-        Map<String, Object> request = buildRequest(instrument, rates,
+        Map<String, Object> request = buildRequest(instrument, rates, source,
                 Map.of("numClusters", numClusters,
                         "anomalyThresholdMultiplier", threshold));
 
@@ -50,22 +52,23 @@ public class MarketRateAnomalyServiceImpl {
                 MarketRateClusterResult.class);
 
         assert result != null;
-        logger.info("[ANOMALY] K-Means detected {} anomalies for {}",
-                result.getTotalAnomalies(), instrument);
+        logger.info("[ANOMALY] K-Means detected {} anomalies for {} source={}",
+                result.getTotalAnomalies(), instrument, source);
 
         modelRunService.recordRun(instrument, "kmeans",
                 rates.size(), result.getTotalAnomalies(),
                 result.getThreshold(), result.getTotalAnomalies() > 0,
-                "models-screen");
+                "models-screen", source);
 
         return result;
     }
 
     public byte[] detectAnomaliesPlot(
-            String instrument, int numClusters, double threshold) {
+            String instrument, int numClusters,
+            double threshold, String source) {
 
-        List<MarketRateDTO> rates = fetchRates(instrument);
-        Map<String, Object> request = buildRequest(instrument, rates,
+        List<MarketRateDTO> rates = fetchRates(instrument, source);
+        Map<String, Object> request = buildRequest(instrument, rates, source,
                 Map.of("numClusters", numClusters,
                         "anomalyThresholdMultiplier", threshold));
 
@@ -73,13 +76,14 @@ public class MarketRateAnomalyServiceImpl {
                 "/kmeans/detect-anomalies-plot", request);
     }
 
-    @Cacheable(value = "autoencoder", key = "#instrument")
+    // ── Autoencoder ───────────────────────────────────────────
+    @Cacheable(value = "autoencoder", key = "#instrument + '_' + #source")
     public MarketRateClusterResult detectAnomaliesAutoencoder(
             String instrument, int epochs,
-            int batchSize, double threshold) {
+            int batchSize, double threshold, String source) {
 
-        List<MarketRateDTO> rates = fetchRates(instrument);
-        Map<String, Object> request = buildRequest(instrument, rates,
+        List<MarketRateDTO> rates = fetchRates(instrument, source);
+        Map<String, Object> request = buildRequest(instrument, rates, source,
                 Map.of("epochs", epochs,
                         "batchSize", batchSize,
                         "anomalyThresholdMultiplier", threshold));
@@ -89,23 +93,23 @@ public class MarketRateAnomalyServiceImpl {
                 MarketRateClusterResult.class);
 
         assert result != null;
-        logger.info("[ANOMALY] Autoencoder detected {} anomalies for {}",
-                result.getTotalAnomalies(), instrument);
+        logger.info("[ANOMALY] Autoencoder detected {} anomalies for {} source={}",
+                result.getTotalAnomalies(), instrument, source);
 
         modelRunService.recordRun(instrument, "autoencoder",
                 rates.size(), result.getTotalAnomalies(),
                 result.getThreshold(), result.getTotalAnomalies() > 0,
-                "models-screen");
+                "models-screen", source);
 
         return result;
     }
 
     public byte[] detectAnomaliesAutoencoderPlot(
             String instrument, int epochs,
-            int batchSize, double threshold) {
+            int batchSize, double threshold, String source) {
 
-        List<MarketRateDTO> rates = fetchRates(instrument);
-        Map<String, Object> request = buildRequest(instrument, rates,
+        List<MarketRateDTO> rates = fetchRates(instrument, source);
+        Map<String, Object> request = buildRequest(instrument, rates, source,
                 Map.of("epochs", epochs,
                         "batchSize", batchSize,
                         "anomalyThresholdMultiplier", threshold));
@@ -114,13 +118,15 @@ public class MarketRateAnomalyServiceImpl {
                 "/autoencoder/detect-anomalies-plot", request);
     }
 
-    @Cacheable(value = "rfc", key = "#instrument")
+    // ── RFC ───────────────────────────────────────────────────
+    @Cacheable(value = "rfc", key = "#instrument + '_' + #source")
     public MarketRateRFCResult detectAnomaliesRFC(
             String instrument, int numClusters, double threshold,
-            int nEstimators, int randomState, double testSize) {
+            int nEstimators, int randomState, double testSize,
+            String source) {
 
-        List<MarketRateDTO> rates = fetchRates(instrument);
-        Map<String, Object> request = buildRequest(instrument, rates,
+        List<MarketRateDTO> rates = fetchRates(instrument, source);
+        Map<String, Object> request = buildRequest(instrument, rates, source,
                 Map.of("numClusters", numClusters,
                         "anomalyThresholdMultiplier", threshold,
                         "nEstimators", nEstimators,
@@ -132,24 +138,25 @@ public class MarketRateAnomalyServiceImpl {
                 request, MarketRateRFCResult.class);
 
         assert result != null;
-        logger.info("[ANOMALY] RFC detected {} anomalies for {}",
-                result.getClassifierAnomalies(), instrument);
+        logger.info("[ANOMALY] RFC detected {} anomalies for {} source={}",
+                result.getClassifierAnomalies(), instrument, source);
 
         modelRunService.recordRun(instrument, "rfc",
                 rates.size(), result.getClassifierAnomalies(),
                 result.getKMeansThreshold(),
                 result.getClassifierAnomalies() > 0,
-                "models-screen");
+                "models-screen", source);
 
         return result;
     }
 
     public byte[] detectAnomaliesRFCPlot(
             String instrument, int numClusters, double threshold,
-            int nEstimators, int randomState, double testSize) {
+            int nEstimators, int randomState, double testSize,
+            String source) {
 
-        List<MarketRateDTO> rates = fetchRates(instrument);
-        Map<String, Object> request = buildRequest(instrument, rates,
+        List<MarketRateDTO> rates = fetchRates(instrument, source);
+        Map<String, Object> request = buildRequest(instrument, rates, source,
                 Map.of("numClusters", numClusters,
                         "anomalyThresholdMultiplier", threshold,
                         "nEstimators", nEstimators,
@@ -162,24 +169,29 @@ public class MarketRateAnomalyServiceImpl {
     }
 
     // ── Shared helpers ────────────────────────────────────────
-    private List<MarketRateDTO> fetchRates(String instrument) {
+    private List<MarketRateDTO> fetchRates(
+            String instrument, String source) {
         List<MarketRateDTO> rates =
-                marketRateService.findByInstrument(instrument);
+                marketRateService.findByInstrumentAndSource(
+                        instrument, source);
         if (rates == null || rates.isEmpty())
             throw new RuntimeException(
-                    "No rates found for instrument: " + instrument);
-        logger.info("[ANOMALY] Fetched {} rates for {}",
-                rates.size(), instrument);
+                    "No rates found for instrument: " + instrument
+                            + " source: " + source);
+        logger.info("[ANOMALY] Fetched {} rates for {} source={}",
+                rates.size(), instrument, source);
         return rates;
     }
 
     private Map<String, Object> buildRequest(
             String instrument,
             List<MarketRateDTO> rates,
+            String source,
             Map<String, Object> params) {
         Map<String, Object> request = new HashMap<>();
         request.put("instrument", instrument);
-        request.put("rates", RateMapper.toRateMapList(rates));
+        request.put("rates",      RateMapper.toRateMapList(rates));
+        request.put("source",     source);
         request.putAll(params);
         return request;
     }

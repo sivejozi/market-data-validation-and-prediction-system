@@ -50,8 +50,8 @@ public class MarketRateController {
     // Needs auth
     @GetMapping("/search")
     public ResponseEntity<List<MarketRateDTO>> findByInstrument(
-            @RequestParam String instrument) {
-        return ResponseEntity.ok(marketRateService.findByInstrument(instrument));
+            @RequestParam String instrument,  @RequestParam String source) {
+        return ResponseEntity.ok(marketRateService.findByInstrumentAndSource(instrument, source));
     }
 
     // Needs auth + admin

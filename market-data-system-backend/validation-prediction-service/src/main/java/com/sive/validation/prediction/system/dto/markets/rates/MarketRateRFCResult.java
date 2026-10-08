@@ -1,5 +1,6 @@
 package com.sive.validation.prediction.system.dto.markets.rates;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,9 @@ import java.util.List;
 public class MarketRateRFCResult {
     private String              instrument;
     private Integer             totalRates;
+    @JsonProperty("kMeansThreshold")
     private Double              kMeansThreshold;
+    @JsonProperty("kMeansAnomalies")
     private Integer             kMeansAnomalies;
     private Integer             classifierAnomalies;
     private RFCMetrics          metrics;

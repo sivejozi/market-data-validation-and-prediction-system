@@ -26,7 +26,7 @@ public class ModelRunServiceImpl {
     public void recordRun(String instrument, String model,
                           int totalRates, int totalAnomalies,
                           double threshold, boolean isAnomalyFlagged,
-                          String triggeredBy) {
+                          String triggeredBy, String source) {
         try {
             double anomalyRate = totalRates > 0
                     ? (double) totalAnomalies / totalRates * 100
@@ -43,11 +43,13 @@ public class ModelRunServiceImpl {
             run.setThreshold(threshold);
             run.setIsAnomalyFlagged(isAnomalyFlagged);
             run.setTriggeredBy(triggeredBy);
+            run.setSource(source != null ? source : "FRED");
 
             modelRunRepository.save(run);
 
-            logger.info("[MLOPS] Run recorded — instrument={} model={} anomalies={} rate={:.2f}%",
-                    instrument, model,
+            logger.info(
+                    "[MLOPS] Run recorded — instrument={} model={} source={} anomalies={} rate={:.2f}%",
+                    instrument, model, source,
                     totalAnomalies, anomalyRate);
 
         } catch (Exception e) {
@@ -75,5 +77,19 @@ public class ModelRunServiceImpl {
         return modelRunRepository
                 .findByInstrumentAndModelOrderByRunDateDesc(
                         instrument, model);
+    }
+
+    public List<ModelRun> getRunsByInstrumentAndSource(
+            String instrument, String source) {
+        return modelRunRepository
+                .findByInstrumentAndSourceOrderByRunDateDesc(
+                        instrument, source);
+    }
+
+    public List<ModelRun> getRunsByInstrumentAndModelAndSource(
+            String instrument, String model, String source) {
+        return modelRunRepository
+                .findByInstrumentAndModelAndSourceOrderByRunDateDesc(
+                        instrument, model, source);
     }
 }

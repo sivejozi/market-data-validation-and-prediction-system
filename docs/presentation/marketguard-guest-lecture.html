@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>MarketGuard — Guest Lecture</title>
+  <style>
+    :root{
+      --bg:#faf8f5;
+      --ink:#1c1f24;
+      --muted:#5f6772;
+      --faint:#8b929c;
+      --accent:#6b1f37;
+      --accent-soft:#f0e4e8;
+      --rule:#e2ddd6;
+      --code-bg:#f2efe9;
+      --good:#2f6b4f;
+      --warn:#8a5a10;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      background:var(--bg);color:var(--ink);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+      -webkit-font-smoothing:antialiased;overflow:hidden;
+    }
+
+    #progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:50;transition:width .25s ease}
+
+    .deck{position:relative;height:100vh;width:100vw}
+
+    .slide{
+      position:absolute;inset:0;
+      display:none;
+      flex-direction:column;
+      padding:clamp(28px,4.5vw,80px);
+      padding-bottom:clamp(60px,7vh,90px);
+    }
+    .slide.on{display:flex}
+
+    .kicker{
+      font-size:clamp(11px,1.05vw,15px);
+      letter-spacing:.14em;text-transform:uppercase;
+      color:var(--accent);font-weight:650;margin-bottom:.9em;
+    }
+    h1{font-size:clamp(30px,4.6vw,66px);line-height:1.06;letter-spacing:-.022em;font-weight:680;max-width:20ch}
+    h2{font-size:clamp(23px,3.1vw,44px);line-height:1.12;letter-spacing:-.016em;font-weight:660;max-width:26ch}
+    h3{font-size:clamp(17px,1.7vw,25px);line-height:1.25;font-weight:640;letter-spacing:-.008em}
+    .lede{font-size:clamp(15px,1.5vw,23px);color:var(--muted);line-height:1.5;max-width:46ch;margin-top:.9em}
+
+    .body{margin-top:clamp(18px,2.6vh,34px);flex:1;min-height:0}
+
+    ul{list-style:none;display:flex;flex-direction:column;gap:clamp(9px,1.5vh,20px)}
+    li{
+      font-size:clamp(14px,1.45vw,22px);line-height:1.42;
+      padding-left:1.5em;position:relative;max-width:52ch;
+    }
+    li::before{
+      content:"";position:absolute;left:0;top:.58em;
+      width:.48em;height:.48em;border-radius:50%;background:var(--accent);opacity:.75;
+    }
+    li b{font-weight:650}
+    li .sub{display:block;color:var(--muted);font-size:.84em;margin-top:.25em;line-height:1.4}
+
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,3.4vw,58px);align-items:start;height:100%}
+    .two.mid{align-items:center}
+
+    code,.mono{
+      font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+      font-size:.88em;background:var(--code-bg);padding:.12em .38em;border-radius:4px;
+    }
+
+    /* pipeline diagram */
+    .pipe{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;margin-top:clamp(12px,2vh,26px)}
+    .stage{
+      flex:1 1 0;min-width:110px;
+      background:#fff;border:1px solid var(--rule);border-radius:10px;
+      padding:clamp(9px,1.2vw,17px);
+      display:flex;flex-direction:column;gap:.35em;
+    }
+    .stage .st-t{font-size:clamp(11px,1.02vw,15px);font-weight:670;letter-spacing:-.005em}
+    .stage .st-d{font-size:clamp(9.5px,.86vw,13px);color:var(--muted);line-height:1.35}
+    .stage.hl{border-color:var(--accent);background:var(--accent-soft)}
+    .arrow{
+      flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+      width:clamp(16px,2vw,34px);color:var(--faint);font-size:clamp(13px,1.3vw,20px)
+    }
+
+    /* stat blocks */
+    .stats{display:flex;gap:clamp(18px,3vw,54px);flex-wrap:wrap;margin-top:clamp(14px,2.4vh,30px)}
+    .stat .n{font-size:clamp(28px,4vw,58px);font-weight:680;letter-spacing:-.03em;line-height:1;color:var(--accent)}
+    .stat .l{font-size:clamp(11px,1.05vw,15px);color:var(--muted);margin-top:.5em;max-width:18ch;line-height:1.35}
+
+    .callout{
+      border-left:3px solid var(--accent);background:#fff;
+      padding:clamp(13px,1.7vw,24px) clamp(15px,2vw,28px);border-radius:0 8px 8px 0;
+      font-size:clamp(14px,1.35vw,21px);line-height:1.45;max-width:54ch;
+    }
+    .callout.q{border-left-color:var(--warn)}
+    .callout .src{display:block;margin-top:.6em;font-size:.76em;color:var(--faint)}
+
+    table{border-collapse:collapse;width:100%;font-size:clamp(12px,1.2vw,18px);margin-top:clamp(10px,1.8vh,22px)}
+    th{text-align:left;font-weight:660;border-bottom:2px solid var(--ink);padding:.5em .7em .5em 0;font-size:.92em}
+    td{border-bottom:1px solid var(--rule);padding:.52em .7em .52em 0;vertical-align:top}
+    td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+
+    /* ── figures ─────────────────────────────────── */
+    .shot{
+      border:1px solid var(--rule);border-radius:10px;background:#fff;
+      padding:clamp(8px,1.1vw,16px);
+      display:flex;flex-direction:column;gap:.55em;
+      min-height:0;overflow:hidden;
+    }
+    .shot .cap{
+      flex:0 0 auto;
+      font-size:clamp(10.5px,.95vw,14px);color:var(--muted);line-height:1.4;
+    }
+    .shot .ph{
+      flex:1 1 auto;
+      border:1.5px dashed #cfc8bf;border-radius:7px;background:#fcfbf9;
+      min-height:clamp(110px,22vh,230px);
+      display:flex;align-items:center;justify-content:center;text-align:center;
+      color:var(--faint);font-size:clamp(11px,1.05vw,15px);padding:1em;line-height:1.5;
+    }
+
+    /* the image class — use on every picture */
+    .architecture-diagram{
+      display:block;
+      flex:1 1 auto;
+      width:100%;height:100%;min-height:0;
+      object-fit:contain;
+      border-radius:6px;
+    }
+
+    /* a body whose main content is a figure */
+    .body.fig{display:flex;flex-direction:column;min-height:0}
+    .body.fig > .shot{flex:1 1 auto}
+
+    /* two figures side by side, matched heights */
+    .two.fill{align-items:stretch}
+    .two.fill .shot{height:100%}
+
+    /* footer / chrome */
+    .foot{
+      position:fixed;left:0;right:0;bottom:0;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 clamp(16px,2.4vw,40px);height:clamp(34px,4.6vh,52px);
+      font-size:clamp(10px,.92vw,13px);color:var(--faint);
+      border-top:1px solid var(--rule);background:rgba(250,248,245,.94);
+      backdrop-filter:blur(6px);z-index:40;
+    }
+    .foot .who{letter-spacing:.02em}
+    .foot .rt{display:flex;gap:1.4em;align-items:center}
+    kbd{
+      font-family:inherit;background:var(--code-bg);border:1px solid var(--rule);
+      border-bottom-width:2px;border-radius:4px;padding:.08em .38em;font-size:.92em;color:var(--muted)
+    }
+
+    #notes{
+      position:fixed;left:0;right:0;bottom:clamp(34px,4.6vh,52px);
+      background:#fff;border-top:1px solid var(--rule);
+      padding:clamp(12px,1.6vw,22px) clamp(16px,2.4vw,40px);
+      font-size:clamp(11.5px,1.05vw,16px);line-height:1.5;color:var(--ink);
+      max-height:34vh;overflow:auto;display:none;z-index:39;
+      box-shadow:0 -8px 24px rgba(0,0,0,.06);
+    }
+    #notes.on{display:block}
+    #notes .nh{font-size:.8em;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);font-weight:660;margin-bottom:.6em}
+    #notes ul{gap:.35em}
+    #notes li{font-size:1em;padding-left:1.15em;max-width:none}
+    #notes li::before{width:.34em;height:.34em;top:.62em;background:var(--faint)}
+
+    .hint{
+      position:fixed;bottom:clamp(46px,6vh,66px);left:50%;transform:translateX(-50%);
+      background:var(--ink);color:#fff;padding:.55em 1.1em;border-radius:20px;
+      font-size:clamp(10.5px,.95vw,13px);z-index:45;opacity:.94;
+      transition:opacity .5s ease;
+    }
+    .hint.gone{opacity:0;pointer-events:none}
+
+    .tight li{max-width:44ch}
+    .end{display:flex;flex-direction:column;justify-content:center;height:100%}
+
+    /* narrow / portrait fallback — the deck is designed for 16:9,
+       but this keeps it readable if the window is not */
+    @media (max-aspect-ratio: 1/1), (max-width: 760px){
+      .two{grid-template-columns:1fr;gap:clamp(14px,2.4vh,26px)}
+      .slide{overflow-y:auto}
+      .pipe{flex-direction:column}
+      .arrow{width:auto;height:clamp(14px,2vh,22px);transform:rotate(90deg)}
+      .stats{gap:clamp(14px,2.4vh,26px)}
+      .architecture-diagram{max-height:44vh}
+    }
+  </style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div class="deck" id="deck">
+
+  <!-- 1 ───────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>30 seconds. Name, MEng Data Science, thesis submitting next month.</li>
+<li>Tell them the shape up front: pipeline, then dashboards, then jobs.</li>
+<li>Say the job section is at the end — it keeps them in the room.</li>">
+    <div class="end">
+      <div class="kicker">Guest lecture &middot; Data Engineering &middot; October 2026</div>
+      <h1>Building a production data pipeline for financial market data</h1>
+      <p class="lede">What I built, what broke, and what I&rsquo;d tell you to learn.</p>
+      <div style="margin-top:clamp(24px,4vh,48px);font-size:clamp(13px,1.25vw,19px);line-height:1.6">
+        <b>Sive Jozi</b><br>
+        <span style="color:var(--muted)">Technical Lead, Forex Technologies &middot; Capitec</span><br>
+        <span style="color:var(--muted)">MEng Data Science &middot; Stellenbosch University</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 ───────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Thirty seconds. This slide exists so part three has authority — do not dwell on it.</li>
+<li>The line that matters is the last one: I did not pick this topic, a decade of production incidents picked it.</li>
+<li>Mentioning Bloomberg and Murex by name tells them this is not a toy problem.</li>">
+    <div class="kicker">Who I am</div>
+    <h2>Twelve years of this breaking in production</h2>
+    <div class="body two mid">
+      <div>
+        <ul class="tight">
+          <li><b>Technical Lead, Forex Technologies &mdash; Capitec</b><span class="sub">Currently. Johannesburg.</span></li>
+          <li><b>Before that: trading systems, mostly Java</b><span class="sub">Standard Bank&rsquo;s structured solutions and credit desks, FNB Commercial, and eight years at Standard Bank before that. Started at FDM in London in 2014.</span></li>
+          <li><b>MEng Data Science, Stellenbosch &mdash; submitting next month</b><span class="sub">Part-time, alongside the day job.</span></li>
+        </ul>
+      </div>
+      <div>
+        <div class="callout">
+          Part of my job at Standard Bank was pulling market data out of Bloomberg and Murex and checking it was right before the desks traded on it.
+          <span class="src">I did not pick this research topic. A decade of watching that break picked it for me.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 ───────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Signpost clearly. Three parts, roughly 12 / 7 / 15 minutes.</li>
+<li>Invite interruptions on part one — it is the part they are being examined on.</li>">
+    <div class="kicker">Roadmap</div>
+    <h2>Three parts</h2>
+    <div class="body">
+      <ul>
+        <li><b>The pipeline</b><span class="sub">Ingestion, an event bus, feature computation, storage, deployment. And a bug that taught me more than the rest of it.</span></li>
+        <li><b>What it produces</b><span class="sub">Dashboards, one result I am pleased with, and two things that did not work.</span></li>
+        <li><b>Getting your first job</b><span class="sub">What to learn, what to build, and how to talk about it.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 3 ───────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Make it concrete: one wrong closing rate feeds every valuation that runs overnight.</li>
+<li>These are not big-data volumes. The difficulty is correctness, not scale.</li>
+<li>That distinction matters — most of data engineering is correctness.</li>">
+    <div class="kicker">Part one &middot; The problem</div>
+    <h2>Market data is small, and it has to be right</h2>
+    <div class="body two mid">
+      <div>
+        <ul>
+          <li>Exchange rates and interest rate fixings, published daily</li>
+          <li>Everything downstream consumes it: pricing, risk, regulatory reporting, trading</li>
+          <li>One wrong rate propagates into every valuation that runs that night</li>
+        </ul>
+      </div>
+      <div>
+        <div class="stats">
+          <div class="stat"><div class="n">6,417</div><div class="l">daily observations for one currency pair, 2000&ndash;2025</div></div>
+          <div class="stat"><div class="n">4</div><div class="l">instruments, two independent data providers</div></div>
+        </div>
+        <div class="callout" style="margin-top:clamp(16px,2.6vh,32px)">
+          This is kilobytes, not terabytes. The engineering problem is not volume &mdash; it is knowing whether a number is correct.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 ───────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Ask them directly: how would you check six thousand rates a day? Let them answer.</li>
+<li>Someone will say 'compare to yesterday'. Good — that is the rule-based approach, and it is where everyone starts.</li>
+<li>Then the problem: a static threshold cannot tell a data error from a real market move.</li>">
+    <div class="kicker">Part one &middot; The problem</div>
+    <h2>How this is actually done today</h2>
+    <div class="body">
+      <ul>
+        <li><b>Static rules</b><span class="sub">&ldquo;Reject if it moved more than 5% from yesterday.&rdquo; Cheap, and wrong in both directions.</span></li>
+        <li><b>Human review</b><span class="sub">Someone scans a spreadsheet each morning. Does not scale, and does not run at 2am.</span></li>
+        <li><b>Post-hoc reconciliation</b><span class="sub">You find out on Thursday that Tuesday was wrong.</span></li>
+      </ul>
+      <div class="callout q" style="margin-top:clamp(16px,2.6vh,30px)">
+        A 5% threshold cannot distinguish a bad feed from a currency crisis. In March 2020 the correct answer was &ldquo;yes, the market really moved that much&rdquo;.
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 ───────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Do not read the service list. Point at three boxes and move on.</li>
+<li>Say why services rather than one application: different languages, different scaling needs.</li>
+<li>Be honest that seven services is arguably too many for this problem — it is in my future work.</li>">
+    <div class="kicker">Part one &middot; Architecture</div>
+    <h2>What I built</h2>
+    <div class="body fig">
+      <p class="lede" style="max-width:60ch">Seven services. Java Spring Boot for orchestration and business logic, Python FastAPI for the models, React for the interface, Kafka between them, PostgreSQL underneath.</p>
+      <div class="shot" style="margin-top:clamp(12px,2vh,22px)">
+        <img
+                src="./figs/Microservice_Arch2_New.png"
+                alt="Chapter 4 Microservice Architecture Diagram"
+                class="architecture-diagram"
+        >
+        <div class="cap">Client &rarr; API gateway &rarr; validation service &rarr; ML service, with Kafka carrying clean rates in and alerts out.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 ───────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>This is the slide that matters for a data engineering module. Slow down.</li>
+<li>Walk it left to right. Name what crosses each boundary.</li>
+<li>Highlighted box is the one everything else depends on — the next two slides are about it.</li>">
+    <div class="kicker">Part one &middot; The pipeline</div>
+    <h2>Ingestion, end to end</h2>
+    <div class="body">
+      <div class="pipe">
+        <div class="stage"><div class="st-t">Amazon S3</div><div class="st-d">Raw CSV, one file per instrument. Immutable.</div></div>
+        <div class="arrow">&rarr;</div>
+        <div class="stage hl"><div class="st-t">Python preprocessing</div><div class="st-d">Clean, remove outliers, compute features, normalise.</div></div>
+        <div class="arrow">&rarr;</div>
+        <div class="stage"><div class="st-t">Kafka topic</div><div class="st-d"><span class="mono">market.rates.clean</span></div></div>
+        <div class="arrow">&rarr;</div>
+        <div class="stage"><div class="st-t">Spring Boot consumer</div><div class="st-d">Validates, persists, orchestrates inference.</div></div>
+        <div class="arrow">&rarr;</div>
+        <div class="stage"><div class="st-t">PostgreSQL</div><div class="st-d">Clean rates, alerts, model run history.</div></div>
+      </div>
+      <div class="callout" style="margin-top:clamp(18px,2.8vh,34px)">
+        Raw data is never modified in place. Every derived value is computed once, in one service, and published on the record.
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 ───────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Mixed audience: define a topic in one sentence before arguing for it.</li>
+<li>Frame as a question — why not just have the preprocessor call the validation API directly?</li>
+<li>Answer: because then it has to know about the second consumer, and the third.</li>">
+    <div class="kicker">Part one &middot; The pipeline</div>
+    <h2>Why an event bus, and not just an API call?</h2>
+    <div class="body two">
+      <div>
+        <h3 style="margin-bottom:.7em">A topic is an append-only log</h3>
+        <ul class="tight">
+          <li>Producers write to it. Consumers read from it at their own pace.</li>
+          <li>Neither knows the other exists.</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="margin-bottom:.7em">What that buys you</h3>
+        <ul class="tight">
+          <li><b>Add a consumer without touching the producer</b><span class="sub">The alerting service was added last. The preprocessor never changed.</span></li>
+          <li><b>Consumers can fail independently</b><span class="sub">If the database is down, messages wait. Nothing is lost.</span></li>
+          <li><b>You can replay</b><span class="sub">Rebuild a downstream store by reading the log again.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 ───────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Single source of truth. Say the phrase, then show the failure it prevents.</li>
+<li>The failure: two services each compute a 7-day mean, one includes today, one does not. Both look right.</li>
+<li>Nobody notices until the numbers disagree in a report six months later.</li>">
+    <div class="kicker">Part one &middot; The pipeline</div>
+    <h2>One service computes features. Once.</h2>
+    <div class="body two mid">
+      <div>
+        <p style="font-size:clamp(14px,1.35vw,21px);line-height:1.5;margin-bottom:1em">Each clean record carries its derived values already computed:</p>
+        <div style="background:var(--code-bg);border-radius:8px;padding:clamp(12px,1.6vw,22px);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:clamp(10.5px,1vw,15px);line-height:1.75">
+          instrument, date, rate,<br>
+          lag1, lag7,<br>
+          rollingMean7, rollingStd7,<br>
+          rateScaled
+        </div>
+      </div>
+      <div>
+        <ul class="tight">
+          <li><b>Every consumer sees identical numbers</b></li>
+          <li><b>The alternative fails quietly</b><span class="sub">Two services each compute a 7-day mean. One includes today, one does not. Both look correct. You find out in a report six months later.</span></li>
+          <li><b>The cost</b><span class="sub">Change a feature definition and you must reprocess. That is a real trade-off, not a free win.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 ───────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Be honest here: my first version retrained on every request. Thirty seconds per call.</li>
+<li>The fix is obvious in hindsight — train on a schedule, save the artefact, load it to serve.</li>
+<li>Admit the validation path in my system still refits per request. It is in my limitations.</li>">
+    <div class="kicker">Part one &middot; MLOps</div>
+    <h2>Training and serving are different workloads</h2>
+    <div class="body">
+      <table>
+        <tr><th style="width:18%"></th><th>Training</th><th>Serving</th></tr>
+        <tr><td><b>When</b></td><td>On new data arriving, or on demand</td><td>Every request</td></tr>
+        <tr><td><b>Cost</b></td><td>Seconds to minutes, full history</td><td>Must be milliseconds</td></tr>
+        <tr><td><b>Output</b></td><td>Artefact on disk plus a metadata file</td><td>An answer</td></tr>
+        <tr><td><b>Reads</b></td><td>The database</td><td>The artefact</td></tr>
+      </table>
+      <div class="callout q" style="margin-top:clamp(16px,2.6vh,30px)">
+        My first version retrained the model on every request. Thirty seconds to validate one number. If you take one thing from this slide: <b>never train in a request handler.</b>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Recap slide. Do not narrate every box — trace one path: S3, preprocessing, Kafka, training, artefact, inference.</li>
+<li>Then point at 'Auto-Retrain' and 'Sub-second' and say: that is the design. My run log shows every retrain was triggered by hand, and I never measured latency.</li>
+<li>That admission is a better story than the diagram alone, and it sets up the 'what I got wrong' slide.</li>">
+    <div class="kicker">Part one &middot; MLOps</div>
+    <h2>The whole loop, on one page</h2>
+    <div class="body fig">
+      <div class="shot">
+        <img
+                src="./figs/mlops_pipeline.png"
+                alt="MLOps Pipeline Diagram"
+                class="architecture-diagram"
+        >
+        <div class="cap">Train &middot; version &middot; infer &middot; track. The dashed line is the retraining trigger; solid lines are data and artefacts.</div>
+      </div>
+      <div class="callout q" style="margin-top:clamp(10px,1.6vh,18px)">
+        Two boxes here are design intent, not measurement. Retraining is <i>wired</i> to the Kafka topic &mdash; but every run in my log was triggered by hand, and I never measured inference latency.
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>GitOps in one sentence: Git is the source of truth for infrastructure, not someone's laptop.</li>
+<li>The practical consequence — every deploy is traceable to a commit, and rollback is a revert.</li>
+<li>This is what auditors actually want, and it is why it matters in finance.</li>">
+    <div class="kicker">Part one &middot; Deployment</div>
+    <h2>Getting it running, repeatably</h2>
+    <div class="body">
+      <div class="pipe">
+        <div class="stage"><div class="st-t">Push to main</div><div class="st-d">GitHub Actions triggers.</div></div>
+        <div class="arrow">&rarr;</div>
+        <div class="stage"><div class="st-t">Build image</div><div class="st-d">Docker, multi-arch, pushed to a registry.</div></div>
+        <div class="arrow">&rarr;</div>
+        <div class="stage"><div class="st-t">Update manifest</div><div class="st-d">A second job bumps the image tag in a Git repo.</div></div>
+        <div class="arrow">&rarr;</div>
+        <div class="stage hl"><div class="st-t">ArgoCD reconciles</div><div class="st-d">Watches that repo and makes the cluster match it.</div></div>
+      </div>
+      <div class="body" style="margin-top:clamp(16px,2.6vh,30px)">
+        <ul class="tight">
+          <li><b>Nobody deploys by hand</b><span class="sub">The cluster's desired state lives in Git. If you change the cluster directly, ArgoCD changes it back.</span></li>
+          <li><b>Rollback is a revert</b><span class="sub">And every change is attributable to a commit and an author. That is the part auditors care about.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Show the real durations — they make it concrete.</li>
+<li>The 15-minute Python build is a genuine cost. Ask them how they'd fix it.</li>
+<li>Answer: layer caching, pin dependencies, build one architecture not two.</li>">
+    <div class="kicker">Part one &middot; Deployment</div>
+    <h2>What the pipelines actually cost</h2>
+    <div class="body">
+      <table>
+        <tr><th>Service</th><th>Jobs</th><th class="num">Duration</th></tr>
+        <tr><td>React frontend</td><td>Build and push &rarr; update manifest</td><td class="num">4m 42s</td></tr>
+        <tr><td>Spring Boot service</td><td>Build JAR &rarr; build and push &rarr; update manifest</td><td class="num">1m 47s</td></tr>
+        <tr><td>Python ML service</td><td>Lint gate &rarr; build and push</td><td class="num">15m 54s</td></tr>
+      </table>
+      <div class="callout q" style="margin-top:clamp(16px,2.6vh,30px)">
+        Sixteen minutes, because the image carries NumPy, pandas, scikit-learn and TensorFlow, built for two architectures.
+        <span class="src">How would you fix it? Layer caching, pinned dependencies, and dropping the architecture you do not deploy to.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>STOP. Do not reveal the next slide. Ask them to guess.</li>
+<li>Set it up properly: no errors, no failed job, every dashboard green.</li>
+<li>Let two or three of them guess before you move on. This is the best three minutes of the talk.</li>">
+    <div class="kicker">Part one &middot; A bug</div>
+    <h2>The count was wrong</h2>
+    <div class="body two mid">
+      <div>
+        <div class="stats" style="flex-direction:column;gap:clamp(14px,2.4vh,30px)">
+          <div class="stat"><div class="n">6,417</div><div class="l">rows expected for ZAR/EUR</div></div>
+          <div class="stat"><div class="n" style="color:var(--warn)">11,520</div><div class="l">rows actually in the table</div></div>
+        </div>
+      </div>
+      <div>
+        <ul class="tight">
+          <li>No errors in any log</li>
+          <li>No failed pipeline run</li>
+          <li>Every health check green</li>
+          <li>The dashboard rendered perfectly</li>
+        </ul>
+        <div class="callout q" style="margin-top:clamp(16px,2.6vh,30px)">
+          Nothing was broken. Everything &ldquo;worked&rdquo;.<br><br><b>What happened?</b>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 14 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Reveal the arithmetic: 6,417 plus 5,103 equals 11,520 exactly. That exactness is the clue.</li>
+<li>The provenance column was wrong, so every query that filtered on source silently returned both providers.</li>
+<li>Land the lesson hard: the fix is a constraint, not a bug fix. Code forgets. Schemas do not.</li>">
+    <div class="kicker">Part one &middot; A bug</div>
+    <h2>Two providers, one label</h2>
+    <div class="body">
+      <ul>
+        <li><b>Bloomberg rows had been written with <span class="mono">source = 'FRED'</span></b><span class="sub">6,417 + 5,103 = 11,520, exactly. The exactness was the clue &mdash; nothing was duplicated, two datasets were wearing one label.</span></li>
+        <li><b>Every query filtering on source silently returned both providers</b><span class="sub">Which means every count, every mean, and every model trained on that table was quietly wrong.</span></li>
+        <li><b>The fix was not in the code</b><span class="sub">Delete the mislabelled rows, verify the count, then add a unique index on <span class="mono">(instrument, source, date)</span> so it can never happen again.</span></li>
+      </ul>
+      <div class="callout" style="margin-top:clamp(14px,2.2vh,28px)">
+        Application code forgets. A constraint does not. Push correctness as far down the stack as you can.
+      </div>
+    </div>
+  </section>
+
+  <!-- 15 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Part two. Lighter, faster pace.</li>
+<li>Do not demo live — the validation endpoints refit per request and take seconds.</li>
+<li>Screenshots or a pre-recorded clip. A cold cache in front of a class is a bad place to find out.</li>">
+    <div class="kicker">Part two</div>
+    <h2>What it produces</h2>
+    <div class="body two fill">
+      <div class="shot">
+        <img
+                src="./figs/dashboard.png"
+                alt="MarketGuard Dashboard"
+                class="architecture-diagram"
+        >
+        <div class="cap">Instruments monitored, alerts raised, artefacts trained, validation runs logged.</div>
+      </div>
+      <div class="shot">
+        <img
+                src="./figs/validate.png"
+                alt="Validate Rate Screen"
+                class="architecture-diagram"
+        >
+        <div class="cap">Submit a rate; three models vote independently; escalation needs two of three.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 16 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Keep the explanation to one line: entropy measures how evenly spread the daily movements are.</li>
+<li>The point for this audience is the last bullet — nothing is trained, so nothing can drift.</li>
+<li>Do not overclaim. It is one episode on one instrument.</li>">
+    <div class="kicker">Part two &middot; A result</div>
+    <h2>The component with nothing to train</h2>
+    <div class="body two mid">
+      <div>
+        <ul class="tight">
+          <li><b>Shannon entropy over daily returns</b><span class="sub">A 20-day rolling window. It measures how evenly spread the movement is, not how large it is.</span></li>
+          <li><b>No fitted parameters at all</b><span class="sub">Nothing to train, nothing to persist, nothing that can drift between deployments.</span></li>
+          <li><b>It agrees across both data providers to within 0.007 bits</b><span class="sub">The only component in the system that does.</span></li>
+        </ul>
+      </div>
+      <div>
+        <div class="callout">
+          On the US overnight rate, entropy rose roughly <b>17 days before</b> the September 2019 repo market disruption &mdash; before it was visible in the rate itself.
+          <span class="src">One episode, one instrument. Suggestive, not proven &mdash; and I say so in the thesis.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 17 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>This is the most useful slide in the deck for them. Do not rush it.</li>
+<li>Lesson one: build the stupid baseline first. I built it last, and it changed my conclusion.</li>
+<li>Lesson two: two of my three 'independent' models were not independent, because one trained on the other's output.</li>">
+    <div class="kicker">Part two &middot; What did not work</div>
+    <h2>Two things I got wrong</h2>
+    <div class="body">
+      <ul>
+        <li><b>An R&sup2; of 0.99 meant almost nothing</b><span class="sub">My regression looked excellent. Then I compared it against &ldquo;tomorrow equals today&rdquo; &mdash; and that was just as accurate. The score was measuring the spread of the target, not my model's skill.</span></li>
+        <li><b>My three-model vote was really a two-model vote</b><span class="sub">One model was trained on labels the first model produced. So they agreed 98% of the time by construction. Of 237 escalations, 236 were the first two agreeing.</span></li>
+      </ul>
+      <div class="callout" style="margin-top:clamp(14px,2.2vh,28px)">
+        <b>Build the dumbest possible baseline first.</b> If you cannot beat &ldquo;tomorrow equals today&rdquo;, you do not yet have a result &mdash; you have a number.
+      </div>
+    </div>
+  </section>
+
+  <!-- 18 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Transition. Ask if there are questions on the technical part before you move on.</li>
+<li>Then shift tone — this section is advice, not findings.</li>">
+    <div class="kicker">Part three</div>
+    <div class="end">
+      <h1>Getting your first job</h1>
+      <p class="lede">What to learn, what to build, and how to talk about it.</p>
+    </div>
+  </section>
+
+  <!-- 19 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Be blunt: nobody in an interview asked me to explain K-Means.</li>
+<li>They asked whether I could write SQL, and whether my code ran anywhere other than my laptop.</li>
+<li>Breadth of algorithms is not the bottleneck. This surprises people.</li>">
+    <div class="kicker">Part three &middot; Skills</div>
+    <h2>The short list that actually matters</h2>
+    <div class="body two">
+      <div>
+        <ul class="tight">
+          <li><b>SQL, properly</b><span class="sub">Joins, window functions, query plans, indexes. Not &ldquo;I have used SELECT&rdquo;.</span></li>
+          <li><b>One language well</b><span class="sub">Python is fine. Well means testable, packaged, and readable by someone else.</span></li>
+          <li><b>Git, and CI</b><span class="sub">Branches, reviews, and a pipeline that runs your tests automatically.</span></li>
+        </ul>
+      </div>
+      <div>
+        <ul class="tight">
+          <li><b>Containers</b><span class="sub">Enough Docker to package your own work and explain what an image is.</span></li>
+          <li><b>One cloud, one orchestrator</b><span class="sub">Depth in one beats a list of six. The concepts transfer.</span></li>
+          <li><b>How data actually moves</b><span class="sub">Batch versus streaming, idempotency, schema change, late-arriving data.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 20 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>My thesis is an example of this, but theirs can be a weekend project.</li>
+<li>Emphasise finished and running over ambitious and abandoned.</li>
+<li>Scope small deliberately — one data source, one table, one chart, deployed.</li>">
+    <div class="kicker">Part three &middot; What to build</div>
+    <h2>One thing, end to end, actually running</h2>
+    <div class="body">
+      <div class="pipe">
+        <div class="stage"><div class="st-t">Ingest</div><div class="st-d">A public API on a schedule.</div></div>
+        <div class="arrow">&rarr;</div>
+        <div class="stage"><div class="st-t">Store</div><div class="st-d">A real database with a real schema.</div></div>
+        <div class="arrow">&rarr;</div>
+        <div class="stage"><div class="st-t">Transform</div><div class="st-d">Tested, and idempotent.</div></div>
+        <div class="arrow">&rarr;</div>
+        <div class="stage"><div class="st-t">Serve</div><div class="st-d">An endpoint or a dashboard.</div></div>
+        <div class="arrow">&rarr;</div>
+        <div class="stage hl"><div class="st-t">Deploy</div><div class="st-d">Somewhere that is not your laptop.</div></div>
+      </div>
+      <div class="body" style="margin-top:clamp(16px,2.6vh,30px)">
+        <ul class="tight">
+          <li><b>Scope it deliberately small</b><span class="sub">One source, one table, one view. Finished beats ambitious.</span></li>
+          <li><b>One finished project beats five notebooks</b><span class="sub">Because only the finished one forces you to handle failure, scheduling and deployment &mdash; which is the actual job.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 21 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>This is the differentiator. Everyone can train a model; almost no junior can show idempotent ingestion.</li>
+<li>Tell them: put the unglamorous work where a reviewer can see it.</li>
+<li>A README with a diagram puts you ahead of most applicants. That is a low bar and a real advantage.</li>">
+    <div class="kicker">Part three &middot; What to build</div>
+    <h2>Make the unglamorous parts visible</h2>
+    <div class="body two mid">
+      <div>
+        <ul class="tight">
+          <li>A schema, with constraints</li>
+          <li>Tests that run in CI</li>
+          <li>Ingestion you can safely run twice</li>
+          <li>A README with a diagram</li>
+          <li>One honest &ldquo;known limitations&rdquo; section</li>
+        </ul>
+      </div>
+      <div>
+        <div class="callout">
+          Anyone can train a model. Very few graduates can show me ingestion that is safe to re-run, or a constraint that prevents a class of bug.
+          <span class="src">That is what separates a project from a portfolio piece.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 22 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Give them the five-beat structure and say it works for any project.</li>
+<li>Insist on the failure story. Interviewers are listening for judgement, not features.</li>
+<li>Mine is the duplicate rows — I tell it exactly the way I told it to you.</li>">
+    <div class="kicker">Part three &middot; Interviews</div>
+    <h2>How to talk about what you built</h2>
+    <div class="body">
+      <ul>
+        <li><b>The problem</b><span class="sub">In one sentence, without jargon.</span></li>
+        <li><b>The constraint</b><span class="sub">No budget, no labelled data, one week. Constraints make choices sound deliberate.</span></li>
+        <li><b>What you chose, and what you rejected</b><span class="sub">&ldquo;I used Postgres over a queue because&hellip;&rdquo; This is the part they are assessing.</span></li>
+        <li><b>What broke</b><span class="sub">Have one real failure ready. Mine is the two providers sharing a label.</span></li>
+        <li><b>What you would do differently</b><span class="sub">Shows you learned something rather than just finished something.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 23 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Useful for students still deciding. Keep it neutral, do not talk one down.</li>
+<li>Say what you have observed about roles advertised, but flag it as your own impression.</li>
+<li>The shared row is the real message — both jobs are mostly 'is this number right?'</li>">
+    <div class="kicker">Part three &middot; Which path</div>
+    <h2>Data engineering or data science?</h2>
+    <div class="body">
+      <table>
+        <tr><th style="width:22%"></th><th>Data engineering</th><th>Data science</th></tr>
+        <tr><td><b>Optimises for</b></td><td>Correctness, reliability, cost</td><td>Insight, inference, decisions</td></tr>
+        <tr><td><b>Day to day</b></td><td>Pipelines, schemas, orchestration, on-call</td><td>Questions, models, analysis, communication</td></tr>
+        <tr><td><b>Judged on</b></td><td>Did the data arrive, correct and on time</td><td>Was the conclusion right and did it change anything</td></tr>
+        <tr><td><b>Shared</b></td><td colspan="2">SQL, Python, version control, and a great deal of &ldquo;is this number actually right?&rdquo;</td></tr>
+      </table>
+      <div class="callout" style="margin-top:clamp(14px,2.2vh,28px)">
+        You do not have to choose now. Build the pipeline either way &mdash; a data scientist who can deploy is rare, and a data engineer who understands models is rarer.
+      </div>
+    </div>
+  </section>
+
+  <!-- 24 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Push documentation over courses for tools — docs are current, courses are not.</li>
+<li>Kleppmann is the one book worth reading cover to cover for this field.</li>
+<li>Order matters: build first, then read. Reading first does not stick.</li>">
+    <div class="kicker">Part three &middot; Learning</div>
+    <h2>Where to actually learn this</h2>
+    <div class="body two">
+      <div>
+        <ul class="tight">
+          <li><b>Official documentation, not courses</b><span class="sub">For Docker, Kafka, Kubernetes and Postgres the docs are better and current. Courses go stale.</span></li>
+          <li><b>One book per area, read properly</b><span class="sub">For this field, Kleppmann&rsquo;s <i>Designing Data-Intensive Applications</i> is the one.</span></li>
+        </ul>
+      </div>
+      <div>
+        <ul class="tight">
+          <li><b>Build first, then read</b><span class="sub">Reading about partitioning before you have hit a partitioning problem does not stick.</span></li>
+          <li><b>Read other people&rsquo;s code</b><span class="sub">Pick a small open-source project and follow one pull request end to end.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 25 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Close with something they can act on today. Keep it to three.</li>
+<li>Offer to look at their repo — and mean it. One or two will take you up on it.</li>">
+    <div class="kicker">Part three &middot; This week</div>
+    <h2>Three things you can start now</h2>
+    <div class="body">
+      <ul>
+        <li><b>Pick one public API and ingest it on a schedule</b><span class="sub">Into a real database, with a unique constraint so re-running is safe. One evening.</span></li>
+        <li><b>Put it in Git with a test and a CI workflow</b><span class="sub">Even one test. The habit matters more than the coverage.</span></li>
+        <li><b>Write the README as though a stranger will run it</b><span class="sub">Because in an interview, one will.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 26 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Leave this up during questions.</li>
+<li>Have the bug story and the baseline story ready — those are what they will ask about.</li>
+<li>If it goes quiet, ask them: what would you have checked first when the count was wrong?</li>">
+    <div class="kicker">Thank you</div>
+    <div class="end">
+      <h1>Questions</h1>
+      <p class="lede">Happy to share the architecture diagrams, or look at your project repository if that would help.</p>
+      <div style="margin-top:clamp(24px,4vh,48px);font-size:clamp(13px,1.25vw,19px);line-height:1.6">
+        <b>Sive Jozi</b><br>
+        <span style="color:var(--muted)">Technical Lead, Forex Technologies &middot; Capitec</span><br>
+        <span style="color:var(--muted)">MEng Data Science &middot; Stellenbosch University</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div id="notes"><div class="nh">Speaker prompts</div><ul id="notesList"></ul></div>
+
+<div class="foot">
+  <span class="who">MarketGuard &middot; Sive Jozi</span>
+  <span class="rt">
+    <span><kbd>&larr;</kbd> <kbd>&rarr;</kbd> navigate</span>
+    <span><kbd>N</kbd> notes</span>
+    <span><b id="num">1</b> / <span id="tot">26</span></span>
+  </span>
+</div>
+
+<div class="hint" id="hint">Arrow keys to move &middot; <b>N</b> for speaker prompts &middot; browser fullscreen recommended</div>
+
+<script>
+  (function(){
+    var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+    var i = 0;
+    var notesBox = document.getElementById('notes');
+    var notesList = document.getElementById('notesList');
+    var notesOn = false;
+
+    document.getElementById('tot').textContent = slides.length;
+
+    function render(){
+      slides.forEach(function(s,k){ s.classList.toggle('on', k===i); });
+      document.getElementById('num').textContent = i+1;
+      document.getElementById('progress').style.width =
+              ((i+1)/slides.length*100) + '%';
+      notesList.innerHTML = slides[i].getAttribute('data-notes') || '<li>&mdash;</li>';
+    }
+
+    function go(n){
+      var t = Math.max(0, Math.min(slides.length-1, n));
+      if(t!==i){ i=t; render(); }
+    }
+
+    function killHint(){
+      var h = document.getElementById('hint');
+      if(h && !h.classList.contains('gone')) h.classList.add('gone');
+    }
+
+    document.addEventListener('keydown', function(e){
+      var k = e.key;
+      if(k==='ArrowRight'||k==='ArrowDown'||k===' '||k==='PageDown'){ e.preventDefault(); go(i+1); killHint(); }
+      else if(k==='ArrowLeft'||k==='ArrowUp'||k==='PageUp'){ e.preventDefault(); go(i-1); killHint(); }
+      else if(k==='Home'){ e.preventDefault(); go(0); }
+      else if(k==='End'){ e.preventDefault(); go(slides.length-1); }
+      else if(k==='n'||k==='N'){
+        notesOn = !notesOn;
+        notesBox.classList.toggle('on', notesOn);
+        killHint();
+      }
+    });
+
+    document.getElementById('deck').addEventListener('click', function(e){
+      if(e.target.closest('#notes')) return;
+      go(e.clientX > window.innerWidth*0.35 ? i+1 : i-1);
+      killHint();
+    });
+
+    setTimeout(killHint, 7000);
+    render();
+  })();
+</script>
+</body>
+</html>

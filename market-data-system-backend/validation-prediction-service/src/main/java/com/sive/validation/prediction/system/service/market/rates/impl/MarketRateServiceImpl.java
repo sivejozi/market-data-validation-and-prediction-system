@@ -64,6 +64,14 @@ public class MarketRateServiceImpl implements MarketRateService {
     }
 
     @Override
+    public List<MarketRateDTO> findByInstrumentAndSource(String instrument, String source) {
+        logger.info("[CACHE MISS] Loading Market rates for {}, {} from DB", instrument, source);
+        return marketRatesRepository.findByInstrumentAndSource(instrument, source).stream()
+                .map(this::convertEntityToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @CachePut(key = "#result.id")
     @CacheEvict(key = "'all'")
     public MarketRateDTO saveMarketRate(MarketRateDTO dto) {

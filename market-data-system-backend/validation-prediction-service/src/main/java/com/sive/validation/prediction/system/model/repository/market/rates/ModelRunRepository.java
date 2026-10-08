@@ -7,8 +7,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ModelRunRepository
-        extends JpaRepository<ModelRun, Long> {
+public interface ModelRunRepository extends JpaRepository<ModelRun, Long> {
+
+    // ── Existing queries ──────────────────────────────────────
+    List<ModelRun> findAllByOrderByRunDateDesc();
 
     List<ModelRun> findByInstrumentOrderByRunDateDesc(
             String instrument);
@@ -19,5 +21,9 @@ public interface ModelRunRepository
     List<ModelRun> findByInstrumentAndModelOrderByRunDateDesc(
             String instrument, String model);
 
-    List<ModelRun> findAllByOrderByRunDateDesc();
+    List<ModelRun> findByInstrumentAndSourceOrderByRunDateDesc(
+            String instrument, String source);
+
+    List<ModelRun> findByInstrumentAndModelAndSourceOrderByRunDateDesc(
+            String instrument, String model, String source);
 }

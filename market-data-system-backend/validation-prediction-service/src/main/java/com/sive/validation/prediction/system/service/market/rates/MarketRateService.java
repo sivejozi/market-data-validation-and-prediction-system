@@ -16,5 +16,7 @@ public interface MarketRateService {
     MarketRateDTO findById(Long id);
 
     List<MarketRateDTO> findByInstrument(String instrument);
+
+    List<MarketRateDTO> findByInstrumentAndSource(String instrument, String source);
 }
 

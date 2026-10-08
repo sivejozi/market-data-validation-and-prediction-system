@@ -46,4 +46,7 @@ public class ModelRun {
 
     @Column(name = "triggered_by")
     private String triggeredBy;
+
+    @Column(name = "source", nullable = false)
+    private String source;
 }

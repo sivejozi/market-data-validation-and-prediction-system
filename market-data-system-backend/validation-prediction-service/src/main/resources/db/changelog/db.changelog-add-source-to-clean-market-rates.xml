@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="1" author="sive">
+        <addColumn tableName="clean_market_rates">
+            <column name="source" type="VARCHAR(20)" defaultValue="FRED">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2" author="sive">
+        <!-- Step 1: Add column as nullable with default -->
+        <addColumn tableName="model_runs">
+            <column name="source" type="VARCHAR(50)" defaultValue="FRED">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="3" author="sive">
+        <!-- Step 2: Backfill existing rows -->
+        <sql>UPDATE model_runs SET source = 'FRED' WHERE source IS NULL;</sql>
+    </changeSet>
+
+    <changeSet id="4" author="sive">
+        <!-- Step 3: Make non-nullable -->
+        <addNotNullConstraint
+                tableName="model_runs"
+                columnName="source"
+                columnDataType="VARCHAR(50)"
+                defaultNullValue="FRED"/>
+    </changeSet>
+
+    <changeSet id="5" author="sive">
+        <!-- Step 4: Index for instrument + source + run_date queries -->
+        <createIndex indexName="idx_model_runs_instrument_source_date"
+                     tableName="model_runs">
+            <column name="instrument"/>
+            <column name="source"/>
+            <column name="run_date"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

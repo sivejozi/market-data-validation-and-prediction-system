@@ -11,4 +11,5 @@ public class ValidateRateRequest {
     private String instrument;
     private String date;
     private double rate;
+    private String source = "FRED"; // default — backward compatible
 }

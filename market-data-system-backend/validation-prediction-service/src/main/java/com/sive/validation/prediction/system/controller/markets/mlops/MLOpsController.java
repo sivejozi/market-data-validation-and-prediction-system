@@ -1,7 +1,10 @@
 package com.sive.validation.prediction.system.controller.markets.mlops;
 
+import com.sive.validation.prediction.system.dto.markets.rates.MarketRateDTO;
 import com.sive.validation.prediction.system.model.market.rates.ModelRun;
+import com.sive.validation.prediction.system.service.market.rates.MarketRateService;
 import com.sive.validation.prediction.system.service.market.rates.impl.ModelRunServiceImpl;
+import com.sive.validation.prediction.system.util.RateMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +33,7 @@ public class MLOpsController {
 
     private final WebClient webClient;
     private final ModelRunServiceImpl modelRunService;
+    private final MarketRateService marketRateService;
 
     @Value("${services.ml.url:http://localhost:8000}")
     private String mlServiceUrl;
@@ -36,9 +41,11 @@ public class MLOpsController {
     @Autowired
     public MLOpsController(
             WebClient.Builder webClientBuilder,
-            ModelRunServiceImpl modelRunService) {
-        this.webClient = webClientBuilder.build();
-        this.modelRunService = modelRunService;
+            ModelRunServiceImpl modelRunService,
+            MarketRateService marketRateService) {
+        this.webClient          = webClientBuilder.build();
+        this.modelRunService    = modelRunService;
+        this.marketRateService  = marketRateService;
     }
 
     // ── Model status — all instruments ────────────────────────
@@ -84,9 +91,30 @@ public class MLOpsController {
     @Operation(summary = "Train all models for a specific instrument")
     public ResponseEntity<Map> trainModels(
             @PathVariable String instrument,
-            @RequestBody Map<String, Object> request) {
-        logger.info("[MLOPS] Triggering training for {}",
-                instrument);
+            @RequestParam(defaultValue = "FRED") String source) {
+
+        logger.info("[MLOPS] Triggering training for {} source={}",
+                instrument, source);
+
+        // Fetch rates from DB for this instrument and source
+        List<MarketRateDTO> rates =
+                marketRateService.findByInstrumentAndSource(
+                        instrument, source);
+
+        if (rates == null || rates.isEmpty())
+            throw new RuntimeException(
+                    "No rates found for instrument: " + instrument
+                            + " source: " + source);
+
+        logger.info("[MLOPS] Fetched {} rates for {} source={}",
+                rates.size(), instrument, source);
+
+        // Build proper request body for Python ML service
+        Map<String, Object> request = new HashMap<>();
+        request.put("instrument", instrument);
+        request.put("rates",      RateMapper.toRateMapList(rates));
+        request.put("source",     source);
+
         Map result = webClient.post()
                 .uri(mlServiceUrl + "/mlops/train/" + instrument)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -99,7 +127,9 @@ public class MLOpsController {
                                                 "ML service error: " + e))))
                 .bodyToMono(Map.class)
                 .block();
-        logger.info("[MLOPS] Training complete for {}", instrument);
+
+        logger.info("[MLOPS] Training complete for {} source={}",
+                instrument, source);
         return ResponseEntity.ok(result);
     }
 
@@ -107,8 +137,14 @@ public class MLOpsController {
     @PostMapping("/retrain/all")
     @Operation(summary = "Retrain all models for all instruments")
     public ResponseEntity<Map> retrainAll(
-            @RequestBody Map<String, Object> request) {
-        logger.info("[MLOPS] Triggering retrain all");
+            @RequestParam(defaultValue = "FRED") String source) {
+
+        logger.info("[MLOPS] Triggering retrain all source={}", source);
+
+        // Fetch all instruments for this source and build request
+        Map<String, Object> request = new HashMap<>();
+        request.put("source", source);
+
         Map result = webClient.post()
                 .uri(mlServiceUrl + "/mlops/retrain/all")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -121,7 +157,8 @@ public class MLOpsController {
                                                 "ML service error: " + e))))
                 .bodyToMono(Map.class)
                 .block();
-        logger.info("[MLOPS] Retrain all complete");
+
+        logger.info("[MLOPS] Retrain all complete source={}", source);
         return ResponseEntity.ok(result);
     }
 

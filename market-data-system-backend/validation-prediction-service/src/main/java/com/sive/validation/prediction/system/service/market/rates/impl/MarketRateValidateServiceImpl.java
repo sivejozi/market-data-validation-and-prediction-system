@@ -26,8 +26,8 @@ public class MarketRateValidateServiceImpl {
     private static final Logger logger =
             LoggerFactory.getLogger(MarketRateValidateServiceImpl.class);
 
-    private static final String ALERT_TOPIC = "market.rates.alert";
-    private static final int CONSENSUS_THRESHOLD = 2;
+    private static final String ALERT_TOPIC       = "market.rates.alert";
+    private static final int    CONSENSUS_THRESHOLD = 2;
 
     private final MarketRateService marketRateService;
     private final MlWebClientService mlWebClientService;
@@ -40,45 +40,50 @@ public class MarketRateValidateServiceImpl {
             MlWebClientService mlWebClientService,
             KafkaTemplate<String, MessageDTO> kafkaTemplate,
             ModelRunServiceImpl modelRunService) {
-        this.marketRateService = marketRateService;
+        this.marketRateService  = marketRateService;
         this.mlWebClientService = mlWebClientService;
-        this.kafkaTemplate = kafkaTemplate;
-        this.modelRunService = modelRunService;
+        this.kafkaTemplate      = kafkaTemplate;
+        this.modelRunService    = modelRunService;
     }
 
     public ValidateRateResponse validateRate(ValidateRateRequest request) {
         String instrument = request.getInstrument();
+        String source     = request.getSource() != null
+                ? request.getSource() : "FRED";
 
-        // 1. Fetch full history
+        // 1. Fetch historical rates by instrument AND source
         List<MarketRateDTO> historicalRates =
-                marketRateService.findByInstrument(instrument);
+                marketRateService.findByInstrumentAndSource(
+                        instrument, source);
 
         if (historicalRates == null || historicalRates.isEmpty())
             throw new RuntimeException(
-                    "No historical rates found for: " + instrument);
+                    "No historical rates found for: " + instrument
+                            + " source: " + source);
 
-        logger.info("[VALIDATE] Fetched {} rates for {}",
-                historicalRates.size(), instrument);
+        logger.info("[VALIDATE] Fetched {} rates for {} source={}",
+                historicalRates.size(), instrument, source);
 
         // 2. Compute features
-        int size = historicalRates.size();
-        double lag1 = historicalRates.get(size - 1).getRate();
-        double lag7 = historicalRates.get(Math.max(0, size - 7)).getRate();
-        double rollingMean7 = historicalRates.subList(Math.max(0, size - 7), size)
+        int    size         = historicalRates.size();
+        double lag1         = historicalRates.get(size - 1).getRate();
+        double lag7         = historicalRates.get(Math.max(0, size - 7)).getRate();
+        double rollingMean7 = historicalRates
+                .subList(Math.max(0, size - 7), size)
                 .stream().mapToDouble(MarketRateDTO::getRate)
                 .average().orElse(request.getRate());
-        double rollingStd7 = computeStd(
+        double rollingStd7  = computeStd(
                 historicalRates.subList(Math.max(0, size - 7), size)
                         .stream().mapToDouble(MarketRateDTO::getRate).toArray(),
                 rollingMean7);
-        double minRate = historicalRates.stream()
+        double minRate      = historicalRates.stream()
                 .mapToDouble(MarketRateDTO::getRate).min().orElse(0);
-        double maxRate = historicalRates.stream()
+        double maxRate      = historicalRates.stream()
                 .mapToDouble(MarketRateDTO::getRate).max().orElse(1);
-        double rateScaled = (maxRate - minRate) == 0 ? 0 :
+        double rateScaled   = (maxRate - minRate) == 0 ? 0 :
                 (request.getRate() - minRate) / (maxRate - minRate);
 
-        // 3. Build new rate
+        // 3. Build new rate observation
         MarketRateDTO newRate = new MarketRateDTO();
         newRate.setInstrument(instrument);
         newRate.setDate(parseDate(request.getDate()));
@@ -93,31 +98,31 @@ public class MarketRateValidateServiceImpl {
         allRates.add(newRate);
 
         // 4. Call ML models
-        ModelValidationResult kmeansResult = callKMeans(instrument, allRates);
+        ModelValidationResult kmeansResult      = callKMeans(instrument, allRates);
         ModelValidationResult autoencoderResult = callAutoencoder(instrument, allRates);
-        ModelValidationResult rfcResult = callRFC(instrument, allRates);
+        ModelValidationResult rfcResult         = callRFC(instrument, allRates);
 
         List<ModelValidationResult> modelResults = List.of(
                 kmeansResult, autoencoderResult, rfcResult);
 
-        // 5. Record MLOps model runs
+        // 5. Record MLOps model runs — now includes source
         modelRunService.recordRun(instrument, "kmeans",
                 allRates.size(), kmeansResult.isAnomaly() ? 1 : 0,
                 kmeansResult.getThreshold(), kmeansResult.isAnomaly(),
-                "validate-endpoint");
+                "validate-endpoint", source);
         modelRunService.recordRun(instrument, "autoencoder",
                 allRates.size(), autoencoderResult.isAnomaly() ? 1 : 0,
                 autoencoderResult.getThreshold(), autoencoderResult.isAnomaly(),
-                "validate-endpoint");
+                "validate-endpoint", source);
         modelRunService.recordRun(instrument, "rfc",
                 allRates.size(), rfcResult.isAnomaly() ? 1 : 0,
                 rfcResult.getThreshold(), rfcResult.isAnomaly(),
-                "validate-endpoint");
+                "validate-endpoint", source);
 
         // 6. Consensus
-        long flagCount = modelResults.stream()
+        long    flagCount     = modelResults.stream()
                 .filter(ModelValidationResult::isAnomaly).count();
-        boolean isAnomaly = flagCount >= CONSENSUS_THRESHOLD;
+        boolean isAnomaly     = flagCount >= CONSENSUS_THRESHOLD;
         boolean alertPublished = false;
 
         if (isAnomaly) {
@@ -139,7 +144,7 @@ public class MarketRateValidateServiceImpl {
         return response;
     }
 
-    // ── ML calls — now use MlWebClientService ─────────────────
+    // ── ML calls ──────────────────────────────────────────────
     private ModelValidationResult callKMeans(
             String instrument, List<MarketRateDTO> rates) {
         try {
@@ -193,7 +198,7 @@ public class MarketRateValidateServiceImpl {
         }
     }
 
-    // ── Unchanged helpers ─────────────────────────────────────
+    // ── Alert publishing ──────────────────────────────────────
     private void publishAlert(ValidateRateRequest request,
                               long flagCount,
                               List<ModelValidationResult> modelResults) {
@@ -221,16 +226,21 @@ public class MarketRateValidateServiceImpl {
             message.setKey("anomaly-detection-alert");
             message.setSource("validation-prediction-service");
             message.setTarget("alerting-service");
-            message.setDescription("Anomaly detected by " + flagCount + " models");
+            message.setDescription("Anomaly detected by "
+                    + flagCount + " models — source: "
+                    + request.getSource());
             message.setTimestamp(LocalDateTime.now());
 
             DataDTO data = new DataDTO();
             data.setValidationAlertDTO(alert);
             message.setData(data);
 
-            kafkaTemplate.send(ALERT_TOPIC, request.getInstrument(), message);
-            logger.info("[VALIDATE] Alert published — instrument={} severity={}",
-                    request.getInstrument(), alert.getSeverity());
+            kafkaTemplate.send(ALERT_TOPIC,
+                    request.getInstrument(), message);
+            logger.info(
+                    "[VALIDATE] Alert published — instrument={} severity={} source={}",
+                    request.getInstrument(), alert.getSeverity(),
+                    request.getSource());
 
         } catch (Exception e) {
             logger.error("[VALIDATE] Failed to publish alert: {}",
@@ -238,8 +248,9 @@ public class MarketRateValidateServiceImpl {
         }
     }
 
+    // ── Helpers ───────────────────────────────────────────────
     private String buildConsensusLabel(long flagCount, int total) {
-        if (flagCount == total) return "HIGH CONFIDENCE ANOMALY";
+        if (flagCount == total)         return "HIGH CONFIDENCE ANOMALY";
         if (flagCount >= CONSENSUS_THRESHOLD) return "PROBABLE ANOMALY";
         return "VALID";
     }

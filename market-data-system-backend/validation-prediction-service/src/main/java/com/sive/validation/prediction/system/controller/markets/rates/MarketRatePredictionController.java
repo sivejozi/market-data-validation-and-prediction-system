@@ -29,19 +29,21 @@ public class MarketRatePredictionController {
     @Operation(summary = "Predict rates using Linear Regression")
     public ResponseEntity<?> predictLR(
             @PathVariable String instrument,
-            @RequestParam(defaultValue = "50") int numDays) {
+            @RequestParam(defaultValue = "50")   int    numDays,
+            @RequestParam(defaultValue = "FRED")  String source) {
         return ResponseEntity.ok(
-                predictionService.predict(instrument, numDays));
+                predictionService.predict(instrument, numDays, source));
     }
 
     @GetMapping("/linear-regression/{instrument}/plot")
     @Operation(summary = "Plot LR prediction")
     public ResponseEntity<byte[]> plotLR(
             @PathVariable String instrument,
-            @RequestParam(defaultValue = "50") int numDays) {
+            @RequestParam(defaultValue = "50")   int    numDays,
+            @RequestParam(defaultValue = "FRED")  String source) {
         return ResponseEntity.ok()
                 .header("Content-Type", "image/png")
-                .body(predictionService.plot(instrument, numDays));
+                .body(predictionService.plot(instrument, numDays, source));
     }
 
     // ── Gradient Boosting ─────────────────────────────────────
@@ -49,19 +51,21 @@ public class MarketRatePredictionController {
     @Operation(summary = "Predict rates using Gradient Boosting")
     public ResponseEntity<?> predictGBR(
             @PathVariable String instrument,
-            @RequestParam(defaultValue = "50") int numDays) {
+            @RequestParam(defaultValue = "50")   int    numDays,
+            @RequestParam(defaultValue = "FRED")  String source) {
         return ResponseEntity.ok(
-                predictionService.predictGBR(instrument, numDays));
+                predictionService.predictGBR(instrument, numDays, source));
     }
 
     @GetMapping("/gradient-boosting/{instrument}/plot")
     @Operation(summary = "Plot GBR prediction")
     public ResponseEntity<byte[]> plotGBR(
             @PathVariable String instrument,
-            @RequestParam(defaultValue = "50") int numDays) {
+            @RequestParam(defaultValue = "50")   int    numDays,
+            @RequestParam(defaultValue = "FRED")  String source) {
         return ResponseEntity.ok()
                 .header("Content-Type", "image/png")
-                .body(predictionService.plotGBR(instrument, numDays));
+                .body(predictionService.plotGBR(instrument, numDays, source));
     }
 
     // ── Random Forest Regressor ───────────────────────────────
@@ -69,19 +73,21 @@ public class MarketRatePredictionController {
     @Operation(summary = "Predict rates using Random Forest Regressor")
     public ResponseEntity<?> predictRFR(
             @PathVariable String instrument,
-            @RequestParam(defaultValue = "50") int numDays) {
+            @RequestParam(defaultValue = "50")   int    numDays,
+            @RequestParam(defaultValue = "FRED")  String source) {
         return ResponseEntity.ok(
-                predictionService.predictRFR(instrument, numDays));
+                predictionService.predictRFR(instrument, numDays, source));
     }
 
     @GetMapping("/random-forest/{instrument}/plot")
     @Operation(summary = "Plot RFR prediction")
     public ResponseEntity<byte[]> plotRFR(
             @PathVariable String instrument,
-            @RequestParam(defaultValue = "50") int numDays) {
+            @RequestParam(defaultValue = "50")   int    numDays,
+            @RequestParam(defaultValue = "FRED")  String source) {
         return ResponseEntity.ok()
                 .header("Content-Type", "image/png")
-                .body(predictionService.plotRFR(instrument, numDays));
+                .body(predictionService.plotRFR(instrument, numDays, source));
     }
 
     // ── All 3 models in one call ──────────────────────────────
@@ -89,25 +95,26 @@ public class MarketRatePredictionController {
     @Operation(summary = "Predict using all 3 models")
     public ResponseEntity<Map<String, Object>> predictAll(
             @PathVariable String instrument,
-            @RequestParam(defaultValue = "50") int numDays) {
+            @RequestParam(defaultValue = "50")   int    numDays,
+            @RequestParam(defaultValue = "FRED")  String source) {
 
         Map<String, Object> results = new HashMap<>();
 
         try {
-            results.put("lr", predictionService.predict(
-                    instrument, numDays));
+            results.put("lr",  predictionService.predict(
+                    instrument, numDays, source));
         } catch (Exception e) {
-            results.put("lr", Map.of("error", e.getMessage()));
+            results.put("lr",  Map.of("error", e.getMessage()));
         }
         try {
             results.put("gbr", predictionService.predictGBR(
-                    instrument, numDays));
+                    instrument, numDays, source));
         } catch (Exception e) {
             results.put("gbr", Map.of("error", e.getMessage()));
         }
         try {
             results.put("rfr", predictionService.predictRFR(
-                    instrument, numDays));
+                    instrument, numDays, source));
         } catch (Exception e) {
             results.put("rfr", Map.of("error", e.getMessage()));
         }
