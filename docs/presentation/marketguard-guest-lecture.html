@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>MarketGuard — Revised 35-minute Guest Lecture</title>
+  <title>MarketGuard — Guest Lecture</title>
   <style>
     :root{
       --bg:#faf8f5;
@@ -253,6 +253,20 @@
     .tight li{max-width:44ch}
     .end{display:flex;flex-direction:column;justify-content:center;height:100%}
 
+    /* title-slide hero image */
+    .hero{
+      border-radius:12px;overflow:hidden;
+      max-height:72vh;
+      box-shadow:0 16px 44px rgba(0,0,0,.16);
+      background:#0d1420;
+    }
+    .hero img{
+      display:block;width:100%;height:100%;
+      min-height:clamp(220px,46vh,560px);
+      object-fit:cover;
+      object-position:86% center;   /* show the screen, not the wordmark */
+    }
+
     /* narrow / portrait fallback — the deck is designed for 16:9,
        but this keeps it readable if the window is not */
     @media (max-aspect-ratio: 1/1), (max-width: 760px){
@@ -274,70 +288,76 @@
   <!-- ══════ INTRO AND BACKGROUND ══════════════════ -->
 
   <!-- 1 ───────────────────────────────────────────── -->
-  <section class="slide" data-time="0:45" data-notes="
-<li>0:45 — Introduce yourself in one sentence, then frame the question: how can we identify a bad financial-market value before downstream systems act on it?</li>
-<li>Promise three things: the system, the evidence, and practical lessons for students.</li>
-">
-    <div class="end">
-      <div class="kicker">Guest lecture &middot; Data Engineering &middot; October 2026</div>
-      <h1>Can we trust the data before the market acts on it?</h1>
-      <p class="lede">A real financial-data problem, the system I built, what the experiments taught me, and lessons for new engineers.</p>
-      <div style="margin-top:clamp(24px,4vh,48px);font-size:clamp(13px,1.25vw,19px);line-height:1.6">
-        <b>Sive Jozi</b><br>
-        <span style="color:var(--muted)">Forex Technologies &middot; Capitec</span><br>
-        <span style="color:var(--muted)">Currently: MEng Data Science &middot; Stellenbosch University</span><br>
-        <span style="color:var(--muted)">From: BSc Computer Science and Mathematics</span>
+  <section class="slide" data-notes="
+<li>30 seconds. Name, MEng Data Science, thesis submitting next month.</li>
+<li>Tell them the shape up front: what I built, what it found, then jobs.</li>
+<li>Say the job section is at the end — it keeps them in the room.</li>">
+    <div class="body two mid" style="margin-top:0">
+      <div>
+        <div class="kicker">Guest lecture &middot; Data Engineering &middot; October 2026</div>
+        <h1 style="font-size:clamp(26px,3.9vw,56px);max-width:17ch">Building a production data pipeline for financial market data</h1>
+        <p class="lede">What I built, what it found, and what I&rsquo;d tell you to learn.</p>
+        <div style="margin-top:clamp(20px,3.4vh,42px);font-size:clamp(13px,1.25vw,19px);line-height:1.6">
+          <b>Sive Jozi</b><br>
+          <span style="color:var(--muted)">Forex Technologies &middot; Capitec</span><br>
+          <span style="color:var(--muted)">Currently: MEng Data Science &middot; Stellenbosch University</span><br>
+          <span style="color:var(--muted)">From: BSc Computer Science and Mathematics</span>
+        </div>
+      </div>
+      <div class="hero">
+        <img src="./figs/marketguard_banner.png"
+             alt="MarketGuard — a trading screen showing live FX rates, indices and commodities against a city skyline">
       </div>
     </div>
   </section>
 
   <!-- 2 ───────────────────────────────────────────── -->
-  <section class="slide" data-time="0:45" data-notes="
-<li>0:45 — Connect the research to your experience in trading systems and market-data checks.</li>
-<li>Avoid a long CV. Establish why correctness matters in a financial context.</li>
-">
+  <section class="slide" data-notes="
+<li>Thirty seconds. This slide exists so part three has authority — do not dwell on it.</li>
+<li>The line that matters is the last one: I did not pick this topic, a decade of production incidents picked it.</li>
+<li>Mentioning Bloomberg and Murex by name tells them this is not a toy problem.</li>">
     <div class="kicker">Who I am</div>
-    <h2>A production problem became a research question</h2>
+    <h2>Twelve years of this breaking in production</h2>
     <div class="body two mid">
       <div>
         <ul class="tight">
           <li><b>Forex Technologies &mdash; Capitec</b><span class="sub">Currently. Johannesburg.</span></li>
           <li><b>Before that: trading systems, mostly Java</b><span class="sub">About ten years at Standard Bank.</span></li>
-          <li><b>MEng Data Science, Stellenbosch &mdash; submitting next month</b><span class="sub">Full-time.</span></li>
+          <li><b>MEng Data Science, Stellenbosch &mdash; submitting next month</b><span class="sub">Part-time, alongside the day job.</span></li>
         </ul>
       </div>
       <div>
         <div class="callout">
-          Part of my job at Standard Bank was pulling market data out of Bloomberg and Murex with very limited checks on whether it was right before the desks traded on it.
-          <span class="src">The research question came from production: how do we identify a bad rate before downstream systems trust it?</span>
+          Part of my job at Standard Bank was pulling market data out of Bloomberg and Murex and checking it was right before the desks traded on it.
+          <span class="src">I did not pick this research topic. A decade of watching that break picked it for me.</span>
         </div>
       </div>
     </div>
   </section>
 
   <!-- 3 ───────────────────────────────────────────── -->
-  <section class="slide" data-time="0:30" data-notes="
-<li>0:30 — Explain the route: problem and design, experimental findings, then career takeaways.</li>
-<li>Tell the audience the results include failures and limitations, not just successes.</li>
-">
+  <section class="slide" data-notes="
+<li>Signpost clearly. Three parts — the build is the longest, then the findings, then jobs.</li>
+<li>Invite interruptions on part one — it is the part they are being examined on.</li>">
     <div class="kicker">Roadmap</div>
-    <h2>One problem. Three lessons.</h2>
+    <h2>Three parts</h2>
     <div class="body">
       <ul>
-        <li><b>The pipeline and the engineering decisions</b><span class="sub">Ingestion, an event bus, feature computation, the models, deployment.</span></li>
-        <li><b>The results, surprises and limitations</b><span class="sub">Prediction and validation results &mdash; including the parts that did not work.</span></li>
-        <li><b>How to turn engineering skills into evidence</b><span class="sub">What to learn, what to build, and how to talk about it.</span></li>
+        <li><b>What I built</b><span class="sub">Ingestion, an event bus, feature computation, the models, deployment.</span></li>
+        <li><b>What it found</b><span class="sub">Prediction and validation results &mdash; including the parts that did not work.</span></li>
+        <li><b>Getting your first job</b><span class="sub">What to learn, what to build, and how to talk about it.</span></li>
       </ul>
     </div>
   </section>
 
   <!-- 4 ───────────────────────────────────────────── -->
-  <section class="slide" data-time="2:00" data-notes="
-<li>2:00 — Start with the consequence: a bad rate can flow into a customer quote, valuation or risk calculation.</li>
-<li>Emphasise that this is not a big-data problem; it is a trust and correctness problem.</li>
-">
+  <section class="slide" data-notes="
+<li>Lead with the customer, not the batch job: someone buys euros, the screen shows a rate that came from a bad feed, they accept, and the deal is done.</li>
+<li>That is the difference between this and most data quality problems — the error is already outside the building before anyone notices.</li>
+<li>These are not big-data volumes. The difficulty is correctness, not scale.</li>
+<li>That distinction matters — most of data engineering is correctness.</li>">
     <div class="kicker">Part one &middot; The problem</div>
-    <h2>The risk is not data volume. It is a wrong number.</h2>
+    <h2>Market data is small, and it has to be right</h2>
     <div class="body two mid">
       <div>
         <ul>
@@ -353,28 +373,28 @@
           <div class="stat"><div class="n">4</div><div class="l">instruments, two independent data providers</div></div>
         </div>
         <div class="callout" style="margin-top:clamp(16px,2.6vh,32px)">
-          The dataset is modest. The consequence of accepting a bad value is not.
+          This is kilobytes, not terabytes. The engineering problem is not volume &mdash; it is knowing whether a number is correct.
         </div>
       </div>
     </div>
   </section>
 
   <!-- 5 ───────────────────────────────────────────── -->
-  <section class="slide" data-time="1:30" data-notes="
-<li>1:30 — Ask the audience how they would validate thousands of observations each day. Pause for answers.</li>
-<li>Explain why a fixed threshold can mistake a real market shock for bad data, or miss a contextual anomaly.</li>
-<li>Transition: the system needs both engineering controls and data-driven signals.</li>
-">
+  <section class="slide" data-notes="
+<li>Ask them directly: how would you check six thousand rates a day? Let them answer. Wait.</li>
+<li>Someone will say 'compare to yesterday'. Good — that is the rule-based approach, and it is where everyone starts.</li>
+<li>Then the problem: a static threshold cannot tell a data error from a real market move.</li>
+<li>Worth adding: my own three-sigma screen removed zero observations from every series. Not because the data is clean, but because a global rule is blind on a series that trends. That is the argument for everything that follows.</li>">
     <div class="kicker">Part one &middot; The problem</div>
-    <h2>Why fixed rules are not enough</h2>
+    <h2>How this is actually done today</h2>
     <div class="body">
       <ul>
-        <li><b>A fixed percentage catches some errors and flags genuine market moves.</b><span class="sub">&ldquo;Reject if it moved more than 5% from yesterday.&rdquo; Cheap, and wrong in both directions.</span></li>
-        <li><b>Useful context, but slow, inconsistent and difficult to scale.</b><span class="sub">Someone scans a spreadsheet each morning. Does not scale, and does not run at 2am.</span></li>
-        <li><b>Finding the problem later does not prevent the original decision.</b><span class="sub">You find out on Thursday that Tuesday was wrong.</span></li>
+        <li><b>Static rules</b><span class="sub">&ldquo;Reject if it moved more than 5% from yesterday.&rdquo; Cheap, and wrong in both directions.</span></li>
+        <li><b>Human review</b><span class="sub">Someone scans a spreadsheet each morning. Does not scale, and does not run at 2am.</span></li>
+        <li><b>Post-hoc reconciliation</b><span class="sub">You find out on Thursday that Tuesday was wrong.</span></li>
       </ul>
       <div class="callout q" style="margin-top:clamp(16px,2.6vh,30px)">
-        The core challenge: distinguish a data-quality failure from a genuine market event.
+        A 5% threshold cannot distinguish a bad feed from a currency crisis. In March 2020 the correct answer was &ldquo;yes, the market really moved that much&rdquo;.
       </div>
     </div>
   </section>
@@ -382,13 +402,13 @@
   <!-- ══════ METHODOLOGY — WHAT I BUILT ════════════ -->
 
   <!-- 6 ───────────────────────────────────────────── -->
-  <section class="slide figslide" data-time="1:00" data-notes="
-<li>1:00 — Give the architecture at a high level; do not read every box.</li>
-<li>Explain the separation of Java orchestration, Python model workloads, Kafka and persistence.</li>
-<li>Acknowledge that the service count adds complexity and is a design trade-off.</li>
-">
+  <section class="slide figslide" data-notes="
+<li>Do not read the service list. Point at three boxes and move on.</li>
+<li>Seven services: Java Spring Boot for orchestration and business logic, Python FastAPI for the models, React for the interface, Kafka between them, PostgreSQL underneath.</li>
+<li>Say why services rather than one application: different languages, different scaling needs.</li>
+<li>Be honest that seven services is arguably too many for this problem — it is in my future work.</li>">
     <div class="kicker">Part one &middot; Architecture</div>
-    <h2>MarketGuard: the system around the models</h2>
+    <h2>What I built</h2>
     <div class="body fig">
       <div class="shot">
         <img
@@ -396,18 +416,18 @@
                 alt="Chapter 4 Microservice Architecture Diagram"
                 class="architecture-diagram"
         >
-        <div class="cap">The architecture separates ingestion, orchestration, model workloads and the user interface. The trade-off is additional operational complexity; this is a prototype architecture, not a claim that seven services are always necessary.</div>
+        <div class="cap">Seven services &mdash; Spring Boot for orchestration, Python FastAPI for the models, React for the interface, Kafka carrying clean rates in and alerts out, PostgreSQL underneath.</div>
       </div>
     </div>
   </section>
 
   <!-- 7 ───────────────────────────────────────────── -->
-  <section class="slide" data-time="2:00" data-notes="
-<li>2:00 — Walk from raw S3 files through preprocessing and Kafka to the consumer and database.</li>
-<li>Point out immutability and traceability. The raw data remains available for audit and reprocessing.</li>
-">
+  <section class="slide" data-notes="
+<li>This is the slide that matters for a data engineering module. Slow down.</li>
+<li>Walk it left to right. Name what crosses each boundary.</li>
+<li>Highlighted box is the one everything else depends on — the next two slides are about it.</li>">
     <div class="kicker">Part one &middot; The pipeline</div>
-    <h2>From raw file to a traceable decision</h2>
+    <h2>Ingestion, end to end</h2>
     <div class="body">
       <div class="pipe">
         <div class="stage"><div class="st-t">Amazon S3</div><div class="st-d">Raw CSV, one file per instrument. Immutable.</div></div>
@@ -421,21 +441,21 @@
         <div class="stage"><div class="st-t">PostgreSQL</div><div class="st-d">Clean rates, alerts, model run history.</div></div>
       </div>
       <div class="callout" style="margin-top:clamp(18px,2.8vh,34px)">
-        Keep the raw source immutable. Make transformations explicit, and carry the derived features downstream so that the same record is evaluated consistently.
+        Raw data is never modified in place. Every derived value is computed once, in one service, and published on the record.
       </div>
     </div>
   </section>
 
   <!-- 8 ───────────────────────────────────────────── -->
-  <section class="slide" data-time="1:15" data-notes="
-<li>1:15 — Define a Kafka topic as a durable stream of records.</li>
-<li>Explain decoupling, independent consumers and replay. Do not claim replay alone guarantees exactly-once processing.</li>
-">
+  <section class="slide" data-notes="
+<li>Mixed audience: define a topic in one sentence before arguing for it.</li>
+<li>Frame as a question — why not just have the preprocessor call the validation API directly?</li>
+<li>Answer: because then it has to know about the second consumer, and the third.</li>">
     <div class="kicker">Part one &middot; The pipeline</div>
-    <h2>Why Kafka here? Decoupling and replay</h2>
+    <h2>Why an event bus, and not just an API call?</h2>
     <div class="body two">
       <div>
-        <h3 style="margin-bottom:.7em">Think of it as a durable stream of records that multiple consumers can read independently.</h3>
+        <h3 style="margin-bottom:.7em">A topic is an append-only log</h3>
         <ul class="tight">
           <li>Producers write to it. Consumers read from it at their own pace.</li>
           <li>Neither knows the other exists.</li>
@@ -444,25 +464,25 @@
       <div>
         <h3 style="margin-bottom:.7em">What that buys you</h3>
         <ul class="tight">
-          <li><b>New downstream behaviour can be added without changing ingestion.</b><span class="sub">The alerting service was added last. The preprocessor never changed.</span></li>
-          <li><b>A consumer outage need not become a synchronous failure in the producer.</b><span class="sub">If the database is down, messages wait. Nothing is lost.</span></li>
-          <li><b>Replay helps rebuild downstream state, provided retention and processing semantics support it.</b><span class="sub">Rebuild a downstream store by reading the log again.</span></li>
+          <li><b>Add a consumer without touching the producer</b><span class="sub">The alerting service was added last. The preprocessor never changed.</span></li>
+          <li><b>Consumers can fail independently</b><span class="sub">If the database is down, messages wait. Nothing is lost.</span></li>
+          <li><b>You can replay</b><span class="sub">Rebuild a downstream store by reading the log again.</span></li>
         </ul>
       </div>
     </div>
   </section>
 
   <!-- 9 ───────────────────────────────────────────── -->
-  <section class="slide" data-time="1:15" data-notes="
-<li>1:15 — Explain the consistency problem with two services computing the same feature differently.</li>
-<li>Mention that the seven-day window is a design choice, not an optimised result.</li>
-<li>For time series, explain why evaluation must respect chronology.</li>
-">
+  <section class="slide" data-notes="
+<li>Single source of truth. Say the phrase, then show the failure it prevents.</li>
+<li>The failure: two services each compute a 7-day mean, one includes today, one does not. Both look right.</li>
+<li>Nobody notices until the numbers disagree in a report six months later.</li>
+<li>One more thing worth saying while this is up: the train/test split is chronological, not random. A random split on a time series lets the model learn Tuesday and Thursday and then predict Wednesday.</li>">
     <div class="kicker">Part one &middot; The pipeline</div>
-    <h2>Feature consistency is a data-quality control</h2>
+    <h2>One service computes features. Once.</h2>
     <div class="body two mid">
       <div>
-        <p style="font-size:clamp(14px,1.35vw,21px);line-height:1.5;margin-bottom:1em">Compute features once and attach them to the record:</p>
+        <p style="font-size:clamp(14px,1.35vw,21px);line-height:1.5;margin-bottom:1em">Each clean record carries its derived values already computed:</p>
         <div style="background:var(--code-bg);border-radius:8px;padding:clamp(12px,1.6vw,22px);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:clamp(10.5px,1vw,15px);line-height:1.75">
           instrument, date, rate,<br>
           lag1, lag7,<br>
@@ -478,22 +498,23 @@
       </div>
       <div>
         <ul class="tight">
-          <li><b>Consumers share the same feature definition and values.</b></li>
+          <li><b>Every consumer sees identical numbers</b></li>
           <li><b>The alternative fails quietly</b><span class="sub">Two services each compute a 7-day mean. One includes today, one does not. Both look correct. You find out in a report six months later.</span></li>
-          <li><b>Centralisation reduces drift, but changing a feature may require reprocessing historical data.</b><span class="sub">Change a feature definition and you must reprocess. That is a real trade-off, not a free win.</span></li>
+          <li><b>The cost</b><span class="sub">Change a feature definition and you must reprocess. That is a real trade-off, not a free win.</span></li>
         </ul>
       </div>
     </div>
   </section>
 
   <!-- 10 ──────────────────────────────────────────── -->
-  <section class="slide figslide" data-time="1:00" data-notes="
-<li>1:00 — Follow one record down both branches.</li>
-<li>Prediction asks what value is expected; anomaly detection asks whether the observation looks unusual.</li>
-<li>Make clear that the two signals are complementary, not interchangeable.</li>
-">
+  <section class="slide figslide" data-notes="
+<li>Trace one path with your finger, do not narrate the boxes. A rate arrives and goes down two branches at once.</li>
+<li>Left branch asks 'what did we expect this rate to be?' Right branch asks 'does this rate look like anything we have seen before?' Those are different questions, and they need different models.</li>
+<li>The two answers meet at the bottom: a predicted value, the actual value, the deviation between them, whether the detectors agreed, and what to do about it.</li>
+<li>Say plainly whether the trader signal is shipped or designed — do not let them assume.</li>
+<li>Next slide is how the right-hand branch gets built. The results for both branches come in part two.</li>">
     <div class="kicker">Part one &middot; How it decides</div>
-    <h2>Prediction and anomaly detection answer different questions</h2>
+    <h2>Two questions, asked in parallel</h2>
     <div class="body two fill">
       <div class="shot">
         <img
@@ -513,13 +534,15 @@
   </section>
 
   <!-- 11 ──────────────────────────────────────────── -->
-  <section class="slide" data-time="2:00" data-notes="
-<li>2:00 — Explain the lack of ground-truth anomaly labels.</li>
-<li>Walk through clustering, pseudo-label generation and classifier training using the existing diagram.</li>
-<li>Important caveat: the classifier learns the clustering labels; it is not independent confirmation of them.</li>
-">
+  <section class="slide figslide" data-notes="
+<li>Open with the problem they will hit in any real project: nobody hands you labelled anomalies. There is no column marked 'this rate was wrong'.</li>
+<li>Walk the five steps quickly. Cluster the history, turn distance from the nearest centroid into a binary label, train a classifier on those labels, then score new rates from the saved model instead of recomputing distances over the whole series.</li>
+<li>Say why the last step matters operationally: scoring one rate no longer costs more as the history grows.</li>
+<li>Note that 'majority vote' in step four is the trees voting inside one model — not the three detectors voting. They will conflate the two otherwise.</li>
+<li>Now the honest part. The classifier learned the clustering's own boundary. They are not two opinions, they are one opinion twice. The numbers come in part two.</li>
+<li>This was the part of the design I was most pleased with. It is also the part that broke the thing built on top of it.</li>">
     <div class="kicker">Part one &middot; Method</div>
-    <h2>Learning without labelled examples</h2>
+    <h2>What do you do when there are no labels?</h2>
     <div class="body two fill">
       <div class="shot">
         <img
@@ -542,12 +565,12 @@
   </section>
 
   <!-- 12 ──────────────────────────────────────────── -->
-  <section class="slide" data-time="1:00" data-notes="
-<li>1:00 — Describe the initial retraining-per-request design and why it was too slow.</li>
-<li>Separate the intended training/serving design from what the implementation currently measures.</li>
-">
+  <section class="slide" data-notes="
+<li>Be honest here: my first version retrained on every request. Thirty seconds per call.</li>
+<li>The fix is obvious in hindsight — train on a schedule, save the artefact, load it to serve.</li>
+<li>Admit the validation path in my system still refits per request. It is in my limitations.</li>">
     <div class="kicker">Part one &middot; MLOps</div>
-    <h2>Do not retrain a model on every request</h2>
+    <h2>Training and serving are different workloads</h2>
     <div class="body">
       <table>
         <tr><th style="width:18%"></th><th>Training</th><th>Serving</th></tr>
@@ -563,12 +586,12 @@
   </section>
 
   <!-- 13 ──────────────────────────────────────────── -->
-  <section class="slide figslide" data-time="0:45" data-notes="
-<li>0:45 — Trace one path through the system and summarise the control loop.</li>
-<li>Explicitly distinguish design intent from demonstrated results: the retraining runs were manual and inference latency was not measured.</li>
-">
+  <section class="slide figslide" data-notes="
+<li>Recap slide. Do not narrate every box — trace one path: S3, preprocessing, Kafka, training, artefact, inference.</li>
+<li>Then point at 'Auto-Retrain' and 'Sub-second' and say: that is the design. My run log shows every retrain was triggered by hand, and I never measured latency.</li>
+<li>That admission sets up the reproducibility slide in part two, where the run log turns out to be the only thing that caught a failure.</li>">
     <div class="kicker">Part one &middot; MLOps</div>
-    <h2>A target architecture is not the same as a measured system</h2>
+    <h2>The whole loop, on one page</h2>
     <div class="body fig">
       <div class="shot">
         <img
@@ -585,12 +608,12 @@
   </section>
 
   <!-- 14 ──────────────────────────────────────────── -->
-  <section class="slide" data-time="1:00" data-notes="
-<li>1:00 — Define GitOps simply: Git records desired state and the controller reconciles the deployed system to it.</li>
-<li>Connect the value to auditability and rollback.</li>
-">
+  <section class="slide" data-notes="
+<li>GitOps in one sentence: Git is the source of truth for infrastructure, not someone's laptop.</li>
+<li>The practical consequence — every deploy is traceable to a commit, and rollback is a revert.</li>
+<li>This is what auditors actually want, and it is why it matters in finance.</li>">
     <div class="kicker">Part one &middot; Deployment</div>
-    <h2>Deployment should be reproducible, reviewable and reversible</h2>
+    <h2>Getting it running, repeatably</h2>
     <div class="body">
       <div class="pipe">
         <div class="stage">
@@ -626,12 +649,13 @@
   </section>
 
   <!-- 15 ──────────────────────────────────────────── -->
-  <section class="slide" data-time="0:45" data-notes="
-<li>0:45 — Let the comparison speak. Highlight the large difference in build/deploy time.</li>
-<li>The stack has operational cost; avoid generalising from one pipeline measurement to every Java or Python service.</li>
-">
+  <section class="slide" data-notes="
+<li>Do not explain the build. Just let them read the last row.</li>
+<li>The Java service deploys in under two minutes. The Python one takes nine times longer, and it is the same pipeline — the difference is entirely what is inside the image.</li>
+<li>The point for them: the modelling stack you pick sets how fast you can ship a fix. That is a cost nobody mentions when choosing TensorFlow.</li>
+<li>If someone asks how to speed it up, say there are three or four levers and you are happy to go through them afterwards — do not spend class time on Docker.</li>">
     <div class="kicker">Part one &middot; Deployment</div>
-    <h2>Build time is part of the engineering trade-off</h2>
+    <h2>What the pipelines actually cost</h2>
     <div class="body">
       <table>
         <tr><th>Service</th><th>Jobs</th><th class="num">Duration</th></tr>
@@ -649,27 +673,82 @@
   <!-- ══════ RESULTS ═══════════════════════════════ -->
 
   <!-- 16 ──────────────────────────────────────────── -->
-  <section class="slide" data-time="2:00" data-notes="
-<li>2:00 — Ask why the more complex models have negative R-squared on the SOFR series.</li>
-<li>Explain that negative R-squared means worse than predicting the test-set mean.</li>
-<li>Caveat: rate levels can be persistent, so compare against a simple baseline before claiming predictive value.</li>
-">
+  <section class="slide figslide" data-notes="
+<li>STOP before you explain anything. Point at the two bars hanging below the line and ask them: why? Wait them out.</li>
+<li>A negative R-squared means the model did worse than just predicting the average. Both tree models managed it.</li>
+<li>The answer, when you give it: a tree predicts by averaging the training values that land in a leaf, so it can never output a number outside the range it was trained on. SOFR went from near zero to over five percent — territory the trees had never seen.</li>
+<li>Linear regression has no such ceiling. The simplest model won because of the shape of the data, not because it was cleverer.</li>
+<li>Then the caveat, out loud: 'tomorrow equals today' scores about as well. R-squared on a rate level is a property of the quantity predicted, not of the method predicting it.</li>">
     <div class="kicker">Part two &middot; Prediction result</div>
-    <h2>A simple baseline beat the more complex models</h2>
-    <div class="body">
-      <table>
-        <tr>
-          <th>Instrument</th>
-          <th class="num">Linear</th>
-          <th class="num">Gradient boosting</th>
-          <th class="num">Random forest</th>
-        </tr>
-        <tr><td>ZAR/EUR</td><td class="num">0.991</td><td class="num">0.731</td><td class="num">0.928</td></tr>
-        <tr><td>ZAR/USD</td><td class="num">0.992</td><td class="num">0.964</td><td class="num">0.970</td></tr>
-        <tr><td>SOFR &mdash; US overnight rate</td><td class="num">0.981</td><td class="num" style="color:var(--warn)">&minus;0.272</td><td class="num" style="color:var(--warn)">&minus;0.645</td></tr>
-        <tr><td>JIBAR 3M</td><td class="num">0.998</td><td class="num">0.750</td><td class="num">0.895</td></tr>
-      </table>
-      <div class="callout" style="margin-top:clamp(14px,2.4vh,30px)">
+    <h2>The simplest model won</h2>
+    <div class="body fig">
+      <svg viewBox="0 0 1000 390" role="img"
+           aria-label="R-squared by model and instrument. Linear regression is highest on all four instruments. On SOFR, gradient boosting scores minus 0.272 and random forest minus 0.645, both below zero."
+           style="width:100%;height:100%;min-height:0;flex:1 1 auto;display:block;font-family:inherit">
+
+        <!-- legend -->
+        <rect x="70"  y="12" width="13" height="13" rx="2.5" fill="#6b1f37"/>
+        <text x="90"  y="23" font-size="14" fill="#1c1f24">Linear regression</text>
+        <rect x="236" y="12" width="13" height="13" rx="2.5" fill="#4f6b78"/>
+        <text x="256" y="23" font-size="14" fill="#1c1f24">Gradient boosting</text>
+        <rect x="410" y="12" width="13" height="13" rx="2.5" fill="#9c7b43"/>
+        <text x="430" y="23" font-size="14" fill="#1c1f24">Random forest</text>
+        <text x="980" y="23" font-size="13" fill="#8b929c" text-anchor="end">R&#178; on levels, held-out test set</text>
+
+        <!-- gridlines + axis -->
+        <line x1="70" y1="55"    x2="980" y2="55"    stroke="#e2ddd6" stroke-width="1"/>
+        <line x1="70" y1="143.2" x2="980" y2="143.2" stroke="#e2ddd6" stroke-width="1"/>
+        <line x1="70" y1="319.7" x2="980" y2="319.7" stroke="#e2ddd6" stroke-width="1"/>
+        <text x="60" y="60"    font-size="13" fill="#8b929c" text-anchor="end">1.0</text>
+        <text x="60" y="148"   font-size="13" fill="#8b929c" text-anchor="end">0.5</text>
+        <text x="60" y="236"   font-size="13" fill="#5f6772" text-anchor="end">0</text>
+        <text x="60" y="324"   font-size="13" fill="#8b929c" text-anchor="end">&#8722;0.5</text>
+
+        <!-- ZAR/EUR -->
+        <rect x="94.75"  y="56.6"  width="54" height="174.9" fill="#6b1f37" rx="2"/>
+        <rect x="156.75" y="102.5" width="54" height="129.0" fill="#4f6b78" rx="2"/>
+        <rect x="218.75" y="67.7"  width="54" height="163.8" fill="#9c7b43" rx="2"/>
+        <text x="121.75" y="50.6"  font-size="13.5" fill="#5f6772" text-anchor="middle">0.991</text>
+        <text x="183.75" y="96.5"  font-size="13.5" fill="#5f6772" text-anchor="middle">0.731</text>
+        <text x="245.75" y="61.7"  font-size="13.5" fill="#5f6772" text-anchor="middle">0.928</text>
+        <text x="183.75" y="372"   font-size="15" fill="#1c1f24" text-anchor="middle" font-weight="650">ZAR/EUR</text>
+
+        <!-- ZAR/USD -->
+        <rect x="322.25" y="56.4"  width="54" height="175.1" fill="#6b1f37" rx="2"/>
+        <rect x="384.25" y="61.4"  width="54" height="170.1" fill="#4f6b78" rx="2"/>
+        <rect x="446.25" y="60.3"  width="54" height="171.2" fill="#9c7b43" rx="2"/>
+        <text x="349.25" y="50.4"  font-size="13.5" fill="#5f6772" text-anchor="middle">0.992</text>
+        <text x="411.25" y="55.4"  font-size="13.5" fill="#5f6772" text-anchor="middle">0.964</text>
+        <text x="473.25" y="54.3"  font-size="13.5" fill="#5f6772" text-anchor="middle">0.970</text>
+        <text x="411.25" y="372"   font-size="15" fill="#1c1f24" text-anchor="middle" font-weight="650">ZAR/USD</text>
+
+        <!-- SOFR -->
+        <rect x="549.75" y="58.4"  width="54" height="173.1" fill="#6b1f37" rx="2"/>
+        <rect x="611.75" y="231.5" width="54" height="48.0"  fill="#4f6b78" rx="2"/>
+        <rect x="673.75" y="231.5" width="54" height="113.8" fill="#9c7b43" rx="2"/>
+        <text x="576.75" y="52.4"  font-size="13.5" fill="#5f6772" text-anchor="middle">0.981</text>
+        <text x="638.75" y="294"   font-size="13.5" fill="#8a5a10" text-anchor="middle" font-weight="650">&#8722;0.272</text>
+        <text x="700.75" y="360"   font-size="13.5" fill="#8a5a10" text-anchor="middle" font-weight="650">&#8722;0.645</text>
+        <text x="638.75" y="372"   font-size="15" fill="#1c1f24" text-anchor="middle" font-weight="650">SOFR</text>
+
+        <!-- JIBAR -->
+        <rect x="777.25" y="55.4"  width="54" height="176.1" fill="#6b1f37" rx="2"/>
+        <rect x="839.25" y="99.1"  width="54" height="132.4" fill="#4f6b78" rx="2"/>
+        <rect x="901.25" y="73.5"  width="54" height="158.0" fill="#9c7b43" rx="2"/>
+        <text x="804.25" y="49.4"  font-size="13.5" fill="#5f6772" text-anchor="middle">0.998</text>
+        <text x="866.25" y="93.1"  font-size="13.5" fill="#5f6772" text-anchor="middle">0.750</text>
+        <text x="928.25" y="67.5"  font-size="13.5" fill="#5f6772" text-anchor="middle">0.895</text>
+        <text x="866.25" y="372"   font-size="15" fill="#1c1f24" text-anchor="middle" font-weight="650">JIBAR 3M</text>
+
+        <!-- zero line, drawn last so it sits above the bars -->
+        <line x1="70" y1="231.5" x2="980" y2="231.5" stroke="#1c1f24" stroke-width="2"/>
+
+        <!-- annotation in the empty space below zero on the left -->
+        <text x="86" y="268" font-size="14.5" fill="#8a5a10" font-weight="650">Below the line:</text>
+        <text x="86" y="288" font-size="14" fill="#5f6772">worse than predicting</text>
+        <text x="86" y="306" font-size="14" fill="#5f6772">the test-set average.</text>
+      </svg>
+      <div class="callout" style="margin-top:clamp(10px,1.6vh,20px)">
         A tree predicts by averaging the training values in a leaf &mdash; so it <b>cannot output a number it has never seen</b>. SOFR went from near zero to over five percent, and both tree models were trapped below it.
         <span class="src">R&sup2; measured on levels &mdash; and &ldquo;tomorrow equals today&rdquo; scores about as well. These numbers describe the data more than the models.</span>
       </div>
@@ -677,13 +756,15 @@
   </section>
 
   <!-- 17 ──────────────────────────────────────────── -->
-  <section class="slide" data-time="2:30" data-notes="
-<li>2:30 — Present the cross-vendor comparison and why it matters.</li>
-<li>State the limitation clearly: much of the comparison window overlaps the training period, so it is not a pure out-of-time test.</li>
-<li>Describe the result as encouraging evidence of cross-vendor agreement, not proof of generalisation.</li>
-">
+  <section class="slide" data-notes="
+<li>This is the result I am most confident in, and the only one with no apology attached. Say it that way.</li>
+<li>The models were fitted on FRED data and never updated. Then I ran them against a completely different vendor's feed — Bloomberg — for 5,103 trading days per instrument. Different fixing conventions, different quotation, different resolution.</li>
+<li>Error went down, not up. On both instruments, on both MAE and RMSE.</li>
+<li>Why that matters to them: a model that only works on the feed it was trained on is a demo. A model that survives a vendor change is infrastructure.</li>
+<li>Be straight about the bound: 69 percent of that window overlaps the training period in calendar terms, so for most of it I am measuring vendor agreement rather than forecasting on unseen time. About 1,569 observations are genuinely out-of-time.</li>
+<li>If asked why R-squared is not on this slide: it rises to 0.999, but only because the Bloomberg window is more dispersed. Same mechanism as the caveat on the last slide.</li>">
     <div class="kicker">Part two &middot; Prediction result</div>
-    <h2>Cross-vendor results are promising — with an important caveat</h2>
+    <h2>Trained on one vendor, run on another</h2>
     <div class="body two mid">
       <div>
         <table style="margin-top:0">
@@ -711,14 +792,15 @@
   </section>
 
   <!-- 18 ──────────────────────────────────────────── -->
-  <section class="slide" data-time="2:30" data-notes="
-<li>2:30 — Focus on the detectors that agree and the detector that behaves differently.</li>
-<li>Use COVID or the repo event as an example of a signal the consensus rule may suppress.</li>
-<li>Explain the consequence: a voting rule can improve agreement while discarding a valuable minority signal.</li>
-<li>Be transparent about start-of-series flags and the limits of interpreting every flag as a real anomaly.</li>
-">
+  <section class="slide" data-notes="
+<li>Read the table top to bottom, then stop on the first and third rows: 245 against 241, 335 against 343, 113 against 116. Those two detectors track each other because one is trained on the other's labels — the design from part one.</li>
+<li>The middle row is the only one moving independently — different principle, different features, no shared training signal.</li>
+<li>COVID is the clearest case. On both currency pairs the Autoencoder flagged March 2020 and the clustering stage did not, because clustering only sees the rate level and the level was still inside a known band.</li>
+<li>Then the September 2019 repo event on SOFR: reconstruction error 21 times the threshold, the single most extreme observation in the study, flagged by the Autoencoder alone.</li>
+<li>Land the design point: my rule escalates on two of three votes. That rule throws this away. The best detection in the system is discarded by the system.</li>
+<li>If asked what the detectors actually found: about two thirds of the ZAR/EUR flags are the start of the series, flagged for being the start of the series. Say it before someone else works it out.</li>">
     <div class="kicker">Part two &middot; Validation result</div>
-    <h2>Detector disagreement exposed a blind spot</h2>
+    <h2>Three detectors, three different answers</h2>
     <div class="body">
       <table>
         <tr><th>Detector</th><th class="num">ZAR/EUR</th><th class="num">ZAR/USD</th><th class="num">SOFR</th></tr>
@@ -734,13 +816,43 @@
   </section>
 
   <!-- 19 ──────────────────────────────────────────── -->
-  <section class="slide" data-time="2:30" data-notes="
-<li>2:30 — State the finding: the same data and code produced a substantially different autoencoder threshold.</li>
-<li>Explain the likely role of unseeded weight initialisation and why it matters for reproducibility.</li>
-<li>Mention the zero-threshold runs as a monitoring gap. A seed helps, but robust checks should also detect failed or degenerate runs.</li>
-">
+  <section class="slide figslide" data-notes="
+<li>One sentence of explanation, no more: this measures how spread out the daily movements are, not how large they are. Twenty-day window.</li>
+<li>Point at the rise on the left of the spike. Entropy was elevated for seventeen consecutive trading days before the repo crisis showed up in the rate itself.</li>
+<li>This is the only result in the study where something was detected before it happened. Everything else agrees with events after the fact.</li>
+<li>Then the engineering point, which is the one that matters for this module: there are no fitted parameters. No weights, no centroids, no learnt threshold — just a window length, a bin count, and the series' own mean and standard deviation. Nothing to train means nothing to drift.</li>
+<li>Tie it to the next slide: the autoencoder's threshold moved 57 percent between refits. This one cannot move, because there is nothing in it to move.</li>
+<li>Do not overclaim. One episode, one instrument. Say so before anyone asks.</li>
+<li>If asked about the flat near-zero stretch in 2020: SOFR was held almost constant, so the returns were almost all zero. The rule is one-sided — it only flags high entropy — so that period carries no flags.</li>">
+    <div class="kicker">Part two &middot; Early warning</div>
+    <h2>Seventeen days of warning</h2>
+    <div class="body fig">
+      <div class="shot">
+        <img
+                src="./figs/entropy_sofr.png"
+                alt="Shannon entropy on SOFR, 2018 to 2026, with flagged observations beginning seventeen trading days before the September 2019 repo market event"
+                class="architecture-diagram"
+        >
+        <div class="cap">Shannon entropy over daily returns, 20-day window &mdash; SOFR, 2018&ndash;2026. Flags begin well before the September 2019 repo market disruption reaches the rate.</div>
+      </div>
+      <div class="callout good" style="margin-top:clamp(10px,1.6vh,18px)">
+        It measures how evenly spread the daily movements are, not how large they are &mdash; and it has <b>no fitted parameters at all</b>. No weights, no centroids, nothing to persist, nothing that can drift.
+        <span class="src">One episode, one instrument &mdash; suggestive, not proven. But it is the only component here that signalled an event in advance, and the only one that agrees across both data vendors to within 0.007 bits.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 20 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Same data, same code, same rule. Two refits five weeks apart. One model's threshold moved 57 percent.</li>
+<li>Contrast it with the slide you just left: that component had nothing to drift. This one drifts without the data changing at all.</li>
+<li>The control is K-Means: its threshold was identical across every logged refit, because its initialisation is seeded. So the input definitely did not change.</li>
+<li>The Autoencoder is the only model in the study whose weight initialisation was left to the framework default. Its threshold is derived from the reconstruction error distribution, and that distribution depends on where optimisation started.</li>
+<li>Consequence: a rate scoring between the two thresholds is flagged under one artefact and cleared under the other, with nothing in the data changed. In a regulated environment you have to defend that decision months later.</li>
+<li>Then the audit trail story: five runs in a thirty-six second window logged a threshold of zero and flagged nothing. A completely failed execution, no exception raised, no alert. The only reason I know is that every run is logged.</li>
+<li>The fix is one line — set a seed. The lesson is that nothing told me.</li>">
     <div class="kicker">Part two &middot; Reproducibility</div>
-    <h2>Reproducibility is part of correctness</h2>
+    <h2>Same data, same code, different answer</h2>
     <div class="body">
       <table>
         <tr><th>Threshold</th><th class="num">First refit</th><th class="num">Second refit</th><th class="num">Change</th></tr>
@@ -754,14 +866,15 @@
     </div>
   </section>
 
-  <!-- 20 ──────────────────────────────────────────── -->
-  <section class="slide figslide" data-time="1:00" data-notes="
-<li>1:00 — Show only two or three screens: rate validation, alerts and deployment status.</li>
-<li>Do not run a live inference demo if it may retrain on demand or take several seconds.</li>
-<li>If sample/test rows are visible, label them honestly.</li>
-">
+  <!-- 21 ──────────────────────────────────────────── -->
+  <section class="slide figslide" data-notes="
+<li>Do not walk all eight. Open two or three and let the rest sit there as evidence that the thing is real.</li>
+<li>The ones worth opening: Validate a rate, because that is the whole thesis in one screen. Alerts, because it shows the consensus verdict. ArgoCD, because it closes the deployment story from part one.</li>
+<li>Click a tile to enlarge, click again or press Escape to close. Arrow keys move between screens while one is open.</li>
+<li>Do not demo live — the validation endpoints refit per request and take seconds. A cold cache in front of a class is a bad place to find out.</li>
+<li>If the alerts screen still shows test rows, say so before anyone asks.</li>">
     <div class="kicker">Part two &middot; The system</div>
-    <h2>From model output to an operational workflow</h2>
+    <h2>What it produces</h2>
     <div class="body">
       <div class="gallery" id="gallery">
         <button class="gthumb" data-cap="Sign-in">
@@ -802,25 +915,24 @@
 
   <!-- ══════ PART THREE — JOBS ═════════════════════ -->
 
-  <!-- 21 ──────────────────────────────────────────── -->
-  <section class="slide" data-time="0:30" data-notes="
-<li>0:30 — Pause and ask whether there is a quick question on the technical section.</li>
-<li>Make the transition explicit: the next slides are practical advice, not research findings.</li>
-">
+  <!-- 22 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Transition. Ask if there are questions on the technical part before you move on.</li>
+<li>Then shift tone — this section is advice, not findings.</li>">
     <div class="kicker">Part three</div>
     <div class="end">
-      <h1>The engineering lessons apply beyond this project</h1>
-      <p class="lede">A short, practical checklist for turning coursework into demonstrable engineering skill.</p>
+      <h1>Getting your first job</h1>
+      <p class="lede">What to learn, what to build, and how to talk about it.</p>
     </div>
   </section>
 
-  <!-- 22 ──────────────────────────────────────────── -->
-  <section class="slide" data-time="1:00" data-notes="
-<li>1:00 — Emphasise SQL, testing, Git and the ability to run software outside a laptop.</li>
-<li>Keep this grounded in your experience; avoid presenting one hiring experience as a universal rule.</li>
-">
+  <!-- 23 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Be blunt: nobody in an interview asked me to explain K-Means.</li>
+<li>They asked whether I could write SQL, and whether my code ran anywhere other than my laptop.</li>
+<li>Breadth of algorithms is not the bottleneck. This surprises people.</li>">
     <div class="kicker">Part three &middot; Skills</div>
-    <h2>Build the fundamentals employers can verify</h2>
+    <h2>The short list that actually matters</h2>
     <div class="body two">
       <div>
         <ul class="tight">
@@ -839,13 +951,13 @@
     </div>
   </section>
 
-  <!-- 23 ──────────────────────────────────────────── -->
-  <section class="slide" data-time="1:15" data-notes="
-<li>1:15 — Recommend one small, finished end-to-end project.</li>
-<li>Name the lifecycle: ingest, store, transform, serve and deploy.</li>
-">
+  <!-- 24 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>My thesis is an example of this, but theirs can be a weekend project.</li>
+<li>Emphasise finished and running over ambitious and abandoned.</li>
+<li>Scope small deliberately — one data source, one table, one chart, deployed.</li>">
     <div class="kicker">Part three &middot; What to build</div>
-    <h2>Finish one small system, not five unfinished notebooks</h2>
+    <h2>One thing, end to end, actually running</h2>
     <div class="body">
       <div class="pipe">
         <div class="stage"><div class="st-t">Ingest</div><div class="st-d">A public API on a schedule.</div></div>
@@ -860,20 +972,20 @@
       </div>
       <div style="margin-top:clamp(16px,2.6vh,30px)">
         <ul class="tight">
-          <li><b>Keep the scope small enough to finish</b><span class="sub">One source, one table, one view. Finished beats ambitious.</span></li>
-          <li><b>Finish the whole lifecycle</b><span class="sub">Scheduling, failure handling, storage and deployment are part of the work — not optional extras.</span></li>
+          <li><b>Scope it deliberately small</b><span class="sub">One source, one table, one view. Finished beats ambitious.</span></li>
+          <li><b>One finished project beats five notebooks</b><span class="sub">Because only the finished one forces you to handle failure, scheduling and deployment &mdash; which is the actual job.</span></li>
         </ul>
       </div>
     </div>
   </section>
 
-  <!-- 24 ──────────────────────────────────────────── -->
-  <section class="slide" data-time="1:00" data-notes="
-<li>1:00 — Explain that repeatable ingestion, schema constraints, CI and clear limitations are evidence of engineering judgement.</li>
-<li>Suggest students put those details in the repository README.</li>
-">
+  <!-- 25 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>This is the differentiator. Everyone can train a model; almost no junior can show idempotent ingestion.</li>
+<li>Tell them: put the unglamorous work where a reviewer can see it.</li>
+<li>A README with a diagram puts you ahead of most applicants. That is a low bar and a real advantage.</li>">
     <div class="kicker">Part three &middot; What to build</div>
-    <h2>Make reliability visible in your portfolio</h2>
+    <h2>Make the unglamorous parts visible</h2>
     <div class="body two mid">
       <div>
         <ul class="tight">
@@ -886,20 +998,20 @@
       </div>
       <div>
         <div class="callout">
-          A strong portfolio shows the work around the code: repeatable ingestion, schema constraints, tests, documentation and an honest account of limitations.
+          Anyone can train a model. Very few graduates can show me ingestion that is safe to re-run, or a constraint that prevents a class of bug.
           <span class="src">That is what separates a project from a portfolio piece.</span>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 25 ──────────────────────────────────────────── -->
-  <section class="slide" data-time="1:00" data-notes="
-<li>1:00 — Give students a reusable structure: problem, decision, evidence, failure, lesson.</li>
-<li>Use the unseeded model as an example of explaining a failure without hiding it.</li>
-">
+  <!-- 26 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Give them the five-beat structure and say it works for any project.</li>
+<li>Insist on the failure story. Interviewers are listening for judgement, not features.</li>
+<li>Mine is the unseeded autoencoder — same data, same code, a different answer, and nothing in the pipeline told me. I told it to you twenty minutes ago exactly the way I would tell it in an interview.</li>">
     <div class="kicker">Part three &middot; Interviews</div>
-    <h2>Tell the story: problem, decision, evidence, failure, lesson</h2>
+    <h2>How to talk about what you built</h2>
     <div class="body">
       <ul>
         <li><b>The problem</b><span class="sub">In one sentence, without jargon.</span></li>
@@ -911,13 +1023,13 @@
     </div>
   </section>
 
-  <!-- 26 ──────────────────────────────────────────── -->
-  <section class="slide" data-time="0:45" data-notes="
-<li>0:45 — Keep the distinction neutral: data engineering emphasises dependable data systems; data science emphasises analysis and modelling.</li>
-<li>Point out the shared concern: deciding whether a number can be trusted.</li>
-">
+  <!-- 27 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Useful for students still deciding. Keep it neutral, do not talk one down.</li>
+<li>Say what you have observed about roles advertised, but flag it as your own impression.</li>
+<li>The shared row is the real message — both jobs are mostly 'is this number right?'</li>">
     <div class="kicker">Part three &middot; Which path</div>
-    <h2>Choose the work you want to do every day</h2>
+    <h2>Data engineering or data science?</h2>
     <div class="body">
       <table>
         <tr><th style="width:22%"></th><th>Data engineering</th><th>Data science</th></tr>
@@ -932,13 +1044,13 @@
     </div>
   </section>
 
-  <!-- 27 ──────────────────────────────────────────── -->
-  <section class="slide" data-time="0:45" data-notes="
-<li>0:45 — Recommend official documentation, one strong reference book, and reading real code.</li>
-<li>Encourage building first and reading to answer a concrete question.</li>
-">
+  <!-- 28 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Push documentation over courses for tools — docs are current, courses are not.</li>
+<li>Kleppmann is the one book worth reading cover to cover for this field.</li>
+<li>Order matters: build first, then read. Reading first does not stick.</li>">
     <div class="kicker">Part three &middot; Learning</div>
-    <h2>Learn by building, then use the documentation to go deeper</h2>
+    <h2>Where to actually learn this</h2>
     <div class="body two">
       <div>
         <ul class="tight">
@@ -955,13 +1067,12 @@
     </div>
   </section>
 
-  <!-- 28 ──────────────────────────────────────────── -->
-  <section class="slide" data-time="0:45" data-notes="
-<li>0:45 — Close with three actions: ingest a public API, add a test and CI, write a runnable README.</li>
-<li>Offer to review a project if you are genuinely able to follow up.</li>
-">
+  <!-- 29 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Close with something they can act on today. Keep it to three.</li>
+<li>Offer to look at their repo — and mean it. One or two will take you up on it.</li>">
     <div class="kicker">Part three &middot; This week</div>
-    <h2>Three actions you can take this week</h2>
+    <h2>Three things you can start now</h2>
     <div class="body">
       <ul>
         <li><b>Pick one public API and ingest it on a schedule</b><span class="sub">Into a real database, with a unique constraint so re-running is safe. One evening.</span></li>
@@ -971,15 +1082,15 @@
     </div>
   </section>
 
-  <!-- 29 ──────────────────────────────────────────── -->
-  <section class="slide" data-time="0:00" data-notes="
-<li>5 minutes of the 40-minute slot is reserved for Q&A; this slide is the handoff.</li>
-<li>Be ready to discuss the reproducibility finding, the cross-vendor caveat, and what you would change next.</li>
-">
+  <!-- 30 ──────────────────────────────────────────── -->
+  <section class="slide" data-notes="
+<li>Leave this up during questions.</li>
+<li>Have the reproducibility story and the cross-vendor result ready — those are what they will ask about.</li>
+<li>If it goes quiet, ask them: how would you have found out that the same model was giving two different answers?</li>">
     <div class="kicker">Thank you</div>
     <div class="end">
-      <h1>Questions and discussion</h1>
-      <p class="lede">Thank you. I am happy to discuss the design choices, the experimental limitations, or review a student project.</p>
+      <h1>Questions</h1>
+      <p class="lede">Happy to share the architecture diagrams, or look at your project repository if that would help.</p>
       <div style="margin-top:clamp(24px,4vh,48px);font-size:clamp(13px,1.25vw,19px);line-height:1.6">
         <b>Sive Jozi</b><br>
         <span style="color:var(--muted)">Forex Technologies &middot; Capitec</span><br>
@@ -995,11 +1106,11 @@
 <div id="notes"><div class="nh">Speaker prompts</div><ul id="notesList"></ul></div>
 
 <div class="foot">
-  <span class="who">MarketGuard &middot; Sive Jozi <span id="slideTime" style="margin-left:10px;color:var(--muted)"></span></span>
+  <span class="who">MarketGuard &middot; Sive Jozi</span>
   <span class="rt">
     <span><kbd>&larr;</kbd> <kbd>&rarr;</kbd> navigate</span>
     <span><kbd>N</kbd> notes</span>
-    <span><b id="num">1</b> / <span id="tot">29</span></span>
+    <span><b id="num">1</b> / <span id="tot">30</span></span>
   </span>
 </div>
 
@@ -1018,8 +1129,6 @@
     function render(){
       slides.forEach(function(s,k){ s.classList.toggle('on', k===i); });
       document.getElementById('num').textContent = i+1;
-      var tm = slides[i].getAttribute('data-time') || '';
-      document.getElementById('slideTime').textContent = tm ? '· ' + tm : '';
       document.getElementById('progress').style.width =
               ((i+1)/slides.length*100) + '%';
       notesList.innerHTML = slides[i].getAttribute('data-notes') || '<li>&mdash;</li>';
@@ -1100,5 +1209,3 @@
 </script>
 </body>
 </html>
-
-```
