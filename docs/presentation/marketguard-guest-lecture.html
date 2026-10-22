@@ -323,7 +323,7 @@
         <ul class="tight">
           <li><b>Forex Technologies &mdash; Capitec</b><span class="sub">Currently. Johannesburg.</span></li>
           <li><b>Before that: trading systems, mostly Java</b><span class="sub">About ten years at Standard Bank.</span></li>
-          <li><b>MEng Data Science, Stellenbosch &mdash; submitting next month</b><span class="sub">Part-time, alongside the day job.</span></li>
+          <li><b>MEng Data Science, Stellenbosch</b></li>
         </ul>
       </div>
       <div>
@@ -344,7 +344,7 @@
     <div class="body">
       <ul>
         <li><b>What I built</b><span class="sub">Ingestion, an event bus, feature computation, the models, deployment.</span></li>
-        <li><b>What it found</b><span class="sub">Prediction and validation results &mdash; including the parts that did not work.</span></li>
+        <li><b>What it found</b><span class="sub">Prediction and validation results.</span></li>
         <li><b>Getting your first job</b><span class="sub">What to learn, what to build, and how to talk about it.</span></li>
       </ul>
     </div>
@@ -473,62 +473,28 @@
   </section>
 
   <!-- 9 ───────────────────────────────────────────── -->
-  <section class="slide" data-notes="
-<li>Single source of truth. Say the phrase, then show the failure it prevents.</li>
-<li>The failure: two services each compute a 7-day mean, one includes today, one does not. Both look right.</li>
-<li>Nobody notices until the numbers disagree in a report six months later.</li>
-<li>One more thing worth saying while this is up: the train/test split is chronological, not random. A random split on a time series lets the model learn Tuesday and Thursday and then predict Wednesday.</li>">
+  <section class="slide figslide" data-notes="
+<li>Do not read the diagram. Point at the worked example in the middle and walk one number: today is 17.83, yesterday was 17.55, that is lag_1. Last week was 17.12, that is lag_7. The seven-day mean is 17.38 and the seven-day standard deviation is 0.21.</li>
+<li>Say why they exist in one line: a model handed a raw rate and a date has no way of knowing whether today is unusual. These four features are how the past gets into the input.</li>
+<li>Now the data engineering point, which is the one for this module: all four are computed once, in the preprocessing service, and stored on the record in PostgreSQL. No model computes its own.</li>
+<li>The failure that prevents: two services each compute a seven-day mean, one includes today and one does not. Both look correct. You find out in a report six months later.</li>
+<li>Why seven days — a trading week plus a buffer. It was a choice, not a result. I did not tune it.</li>
+<li>If asked about the cost: change a feature definition and you have to reprocess the history. That is a real trade-off, not a free win.</li>
+<li>Three benefits worth saying out loud, all architectural: computed once so every model agrees; one definition change propagates to all six; and the provenance of any flagged rate traces back through one preprocessing path to the source file.</li>
+<li>Careful with the footer of this diagram. 'Better generalisation, lower overfitting' and 'improved accuracy' are not things I measured — I never ran the ablation with and without these features. If asked, say so: the architectural benefits are demonstrated, the accuracy ones are inherited from the literature.</li>">
     <div class="kicker">Part one &middot; The pipeline</div>
     <h2>One service computes features. Once.</h2>
-    <div class="body two mid">
-      <div>
-        <p style="font-size:clamp(14px,1.35vw,21px);line-height:1.5;margin-bottom:1em">Each clean record carries its derived values already computed:</p>
-        <div style="background:var(--code-bg);border-radius:8px;padding:clamp(12px,1.6vw,22px);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:clamp(10.5px,1vw,15px);line-height:1.75">
-          instrument, date, rate,<br>
-          lag1, lag7,<br>
-          rollingMean7, rollingStd7,<br>
-          rateScaled
-        </div>
-        <p style="font-size:clamp(11.5px,1.08vw,16px);color:var(--muted);line-height:1.45;margin-top:.8em">
-          Yesterday&rsquo;s rate and last week&rsquo;s, a seven-day mean and standard deviation, and the rate rescaled to zero mean and unit variance &mdash; so the model never sees a raw price.
-        </p>
-        <p style="font-size:clamp(11.5px,1.08vw,16px);color:var(--muted);line-height:1.45;margin-top:.8em">
-          Why seven days: a trading week plus a buffer. It was a choice, not a result &mdash; I did not tune it.
-        </p>
-      </div>
-      <div>
-        <ul class="tight">
-          <li><b>Every consumer sees identical numbers</b></li>
-          <li><b>The alternative fails quietly</b><span class="sub">Two services each compute a 7-day mean. One includes today, one does not. Both look correct. You find out in a report six months later.</span></li>
-          <li><b>The cost</b><span class="sub">Change a feature definition and you must reprocess. That is a real trade-off, not a free win.</span></li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  <!-- 10 ──────────────────────────────────────────── -->
-  <section class="slide figslide" data-notes="
-<li>Trace one path with your finger, do not narrate the boxes. A rate arrives and goes down two branches at once.</li>
-<li>Left branch asks 'what did we expect this rate to be?' Right branch asks 'does this rate look like anything we have seen before?' Those are different questions, and they need different models.</li>
-<li>The two answers meet at the bottom: a predicted value, the actual value, the deviation between them, whether the detectors agreed, and what to do about it.</li>
-<li>Say plainly whether the trader signal is shipped or designed — do not let them assume.</li>
-<li>Next slide is how the right-hand branch gets built. The results for both branches come in part two.</li>">
-    <div class="kicker">Part one &middot; How it decides</div>
-    <h2>Two questions, asked in parallel</h2>
-    <div class="body two fill">
+    <div class="body fig">
       <div class="shot">
         <img
-                src="./figs/trader_signal.png"
-                alt="Incoming rate splits into a prediction layer and a validation layer, which combine into a unified trader signal"
+                src="./figs/feature_engineering_diagram.png"
+                alt="Feature engineering pipeline: raw rate data, lag features, rolling window features, and a worked example for a ZAR/USD rate of 17.83"
                 class="architecture-diagram"
         >
       </div>
-      <div style="display:flex;flex-direction:column;justify-content:center">
-        <ul class="tight">
-          <li><b>Prediction asks what the rate should be</b><span class="sub">Three regressors produce an expected value, and the deviation from it is the signal.</span></li>
-          <li><b>Validation asks whether it looks familiar</b><span class="sub">Three detectors score the rate against the shape of everything seen before. No target value, just a verdict.</span></li>
-          <li><b>Neither alone is enough</b><span class="sub">A rate can be far from expected and still correct &mdash; March 2020. Or close to expected and still wrong.</span></li>
-        </ul>
+      <div class="callout" style="margin-top:clamp(10px,1.6vh,18px)">
+        Computed <b>once</b>, in the preprocessing service, and stored on the record &mdash; so every model sees identical numbers, and one definition change propagates to all six.
+        <span class="src">The alternative fails quietly: two services each compute a seven-day mean, one includes today and one does not, and both look correct until a report disagrees six months later.</span>
       </div>
     </div>
   </section>
@@ -589,7 +555,7 @@
   <section class="slide figslide" data-notes="
 <li>Recap slide. Do not narrate every box — trace one path: S3, preprocessing, Kafka, training, artefact, inference.</li>
 <li>Then point at 'Auto-Retrain' and 'Sub-second' and say: that is the design. My run log shows every retrain was triggered by hand, and I never measured latency.</li>
-<li>That admission sets up the reproducibility slide in part two, where the run log turns out to be the only thing that caught a failure.</li>">
+<li>If anyone pushes on it, the honest follow-up is that the run log is the only reason I know about a failed execution that raised no exception. Good material for questions, not for a slide.</li>">
     <div class="kicker">Part one &middot; MLOps</div>
     <h2>The whole loop, on one page</h2>
     <div class="body fig">
@@ -757,42 +723,6 @@
 
   <!-- 17 ──────────────────────────────────────────── -->
   <section class="slide" data-notes="
-<li>This is the result I am most confident in, and the only one with no apology attached. Say it that way.</li>
-<li>The models were fitted on FRED data and never updated. Then I ran them against a completely different vendor's feed — Bloomberg — for 5,103 trading days per instrument. Different fixing conventions, different quotation, different resolution.</li>
-<li>Error went down, not up. On both instruments, on both MAE and RMSE.</li>
-<li>Why that matters to them: a model that only works on the feed it was trained on is a demo. A model that survives a vendor change is infrastructure.</li>
-<li>Be straight about the bound: 69 percent of that window overlaps the training period in calendar terms, so for most of it I am measuring vendor agreement rather than forecasting on unseen time. About 1,569 observations are genuinely out-of-time.</li>
-<li>If asked why R-squared is not on this slide: it rises to 0.999, but only because the Bloomberg window is more dispersed. Same mechanism as the caveat on the last slide.</li>">
-    <div class="kicker">Part two &middot; Prediction result</div>
-    <h2>Trained on one vendor, run on another</h2>
-    <div class="body two mid">
-      <div>
-        <table style="margin-top:0">
-          <tr>
-            <th></th>
-            <th class="num">FRED test set</th>
-            <th class="num">Bloomberg</th>
-          </tr>
-          <tr><td><b>ZAR/EUR</b> MAE</td><td class="num">0.1069</td><td class="num">0.0970</td></tr>
-          <tr><td><b>ZAR/EUR</b> MAPE</td><td class="num">0.57%</td><td class="num">0.65%</td></tr>
-          <tr><td><b>ZAR/USD</b> MAE</td><td class="num">0.1137</td><td class="num">0.0908</td></tr>
-          <tr><td><b>ZAR/USD</b> MAPE</td><td class="num">0.67%</td><td class="num">0.73%</td></tr>
-        </table>
-      </div>
-      <div>
-        <div class="stats" style="margin-top:0">
-          <div class="stat"><div class="n">5,103</div><div class="l">Bloomberg observations per instrument, 2007&ndash;2026</div></div>
-        </div>
-        <div class="callout good" style="margin-top:clamp(16px,2.6vh,32px)">
-          Not one parameter was updated. A different vendor, different fixing conventions &mdash; and the error went <b>down</b>, on both instruments.
-          <span class="src">Bounded honestly: 69% of that window overlaps the training period in calendar terms, so only about 1,569 observations are fully out-of-time.</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 18 ──────────────────────────────────────────── -->
-  <section class="slide" data-notes="
 <li>Read the table top to bottom, then stop on the first and third rows: 245 against 241, 335 against 343, 113 against 116. Those two detectors track each other because one is trained on the other's labels — the design from part one.</li>
 <li>The middle row is the only one moving independently — different principle, different features, no shared training signal.</li>
 <li>COVID is the clearest case. On both currency pairs the Autoencoder flagged March 2020 and the clustering stage did not, because clustering only sees the rate level and the level was still inside a known band.</li>
@@ -815,58 +745,39 @@
     </div>
   </section>
 
-  <!-- 19 ──────────────────────────────────────────── -->
+  <!-- 17 ─ -->
   <section class="slide figslide" data-notes="
-<li>One sentence of explanation, no more: this measures how spread out the daily movements are, not how large they are. Twenty-day window.</li>
-<li>Point at the rise on the left of the spike. Entropy was elevated for seventeen consecutive trading days before the repo crisis showed up in the rate itself.</li>
-<li>This is the only result in the study where something was detected before it happened. Everything else agrees with events after the fact.</li>
-<li>Then the engineering point, which is the one that matters for this module: there are no fitted parameters. No weights, no centroids, no learnt threshold — just a window length, a bin count, and the series' own mean and standard deviation. Nothing to train means nothing to drift.</li>
-<li>Tie it to the next slide: the autoencoder's threshold moved 57 percent between refits. This one cannot move, because there is nothing in it to move.</li>
-<li>Do not overclaim. One episode, one instrument. Say so before anyone asks.</li>
-<li>If asked about the flat near-zero stretch in 2020: SOFR was held almost constant, so the returns were almost all zero. The rule is one-sided — it only flags high entropy — so that period carries no flags.</li>">
-    <div class="kicker">Part two &middot; Early warning</div>
-    <h2>Seventeen days of warning</h2>
-    <div class="body fig">
+<li>Call back to the very first problem slide: a customer quoted off a bad rate, and the deal is binding. This is the point in the flow where that gets stopped.</li>
+<li>Trace one path with the cursor. A rate arrives and goes down two branches at once — what did we expect this to be, and does it look like anything we have seen before. Different questions, different models.</li>
+<li>For a dealer the two answers arrive together: an expected value, the actual value, the gap between them, whether the detectors agreed, and what to do about it.</li>
+<li>Be precise about the first one. It is a reference value, not a forecast to trade on. My own results chapter says the prediction layer barely beats carrying yesterday forward — it tracks the level closely enough to compare against, and that is all I claim.</li>
+<li>The second benefit is the one dealers actually care about: the flag comes with a reason. Which detectors agreed, and how strongly. Not a black box saying no.</li>
+<li>And the third: it runs before the quote, not in the morning reconciliation. That is the difference between catching a bad rate and explaining one.</li>
+<li>Say plainly whether this screen is shipped or designed. Do not let them assume.</li>">
+    <div class="kicker">Part two &middot; What a dealer gets</div>
+    <h2>Two answers, at the moment of the quote</h2>
+    <div class="body two fill">
       <div class="shot">
         <img
-                src="./figs/entropy_sofr.png"
-                alt="Shannon entropy on SOFR, 2018 to 2026, with flagged observations beginning seventeen trading days before the September 2019 repo market event"
+                src="./figs/trader_signal.png"
+                alt="Incoming rate splits into a prediction layer and a validation layer, which combine into a unified trader signal"
                 class="architecture-diagram"
         >
-        <div class="cap">Shannon entropy over daily returns, 20-day window &mdash; SOFR, 2018&ndash;2026. Flags begin well before the September 2019 repo market disruption reaches the rate.</div>
       </div>
-      <div class="callout good" style="margin-top:clamp(10px,1.6vh,18px)">
-        It measures how evenly spread the daily movements are, not how large they are &mdash; and it has <b>no fitted parameters at all</b>. No weights, no centroids, nothing to persist, nothing that can drift.
-        <span class="src">One episode, one instrument &mdash; suggestive, not proven. But it is the only component here that signalled an event in advance, and the only one that agrees across both data vendors to within 0.007 bits.</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- 20 ──────────────────────────────────────────── -->
-  <section class="slide" data-notes="
-<li>Same data, same code, same rule. Two refits five weeks apart. One model's threshold moved 57 percent.</li>
-<li>Contrast it with the slide you just left: that component had nothing to drift. This one drifts without the data changing at all.</li>
-<li>The control is K-Means: its threshold was identical across every logged refit, because its initialisation is seeded. So the input definitely did not change.</li>
-<li>The Autoencoder is the only model in the study whose weight initialisation was left to the framework default. Its threshold is derived from the reconstruction error distribution, and that distribution depends on where optimisation started.</li>
-<li>Consequence: a rate scoring between the two thresholds is flagged under one artefact and cleared under the other, with nothing in the data changed. In a regulated environment you have to defend that decision months later.</li>
-<li>Then the audit trail story: five runs in a thirty-six second window logged a threshold of zero and flagged nothing. A completely failed execution, no exception raised, no alert. The only reason I know is that every run is logged.</li>
-<li>The fix is one line — set a seed. The lesson is that nothing told me.</li>">
-    <div class="kicker">Part two &middot; Reproducibility</div>
-    <h2>Same data, same code, different answer</h2>
-    <div class="body">
-      <table>
-        <tr><th>Threshold</th><th class="num">First refit</th><th class="num">Second refit</th><th class="num">Change</th></tr>
-        <tr><td>K-Means distance</td><td class="num">2.6297</td><td class="num">2.6297</td><td class="num">none</td></tr>
-        <tr><td>Autoencoder error</td><td class="num">0.0000373</td><td class="num">0.0000160</td><td class="num" style="color:var(--warn)">&minus;57%</td></tr>
-      </table>
-      <div class="callout q" style="margin-top:clamp(16px,2.6vh,30px)">
-        Identical training data &mdash; the series had ended months earlier. One model is seeded and one is not, and the unseeded one decides whether a rate is flagged.
-        <span class="src">The audit table also holds five runs inside one thirty-six second window where all three detectors logged a threshold of zero and flagged nothing. A completely failed execution, with no exception raised. Logging caught it; the code did not.</span>
+      <div style="display:flex;flex-direction:column;justify-content:center">
+        <ul class="tight">
+          <li><b>A value to check the quote against</b><span class="sub">An expected rate and the deviation from it. A reference point &mdash; not a forecast to trade on.</span></li>
+          <li><b>A verdict with a reason attached</b><span class="sub">Which detectors flagged it, and how strongly. A dealer sees <i>why</i>, not just a refusal.</span></li>
+          <li><b>Before the quote, not after it</b><span class="sub">The difference between catching a bad rate and explaining one the next morning.</span></li>
+        </ul>
+        <div class="callout" style="margin-top:clamp(14px,2.2vh,26px)">
+          Back to the customer on the first slide &mdash; this is where that deal stops being binding on a wrong number.
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- 21 ──────────────────────────────────────────── -->
+  <!-- 18 ──────────────────────────────────────────── -->
   <section class="slide figslide" data-notes="
 <li>Do not walk all eight. Open two or three and let the rest sit there as evidence that the thing is real.</li>
 <li>The ones worth opening: Validate a rate, because that is the whole thesis in one screen. Alerts, because it shows the consensus verdict. ArgoCD, because it closes the deployment story from part one.</li>
@@ -915,7 +826,7 @@
 
   <!-- ══════ PART THREE — JOBS ═════════════════════ -->
 
-  <!-- 22 ──────────────────────────────────────────── -->
+  <!-- 19 ──────────────────────────────────────────── -->
   <section class="slide" data-notes="
 <li>Transition. Ask if there are questions on the technical part before you move on.</li>
 <li>Then shift tone — this section is advice, not findings.</li>">
@@ -926,7 +837,7 @@
     </div>
   </section>
 
-  <!-- 23 ──────────────────────────────────────────── -->
+  <!-- 20 ──────────────────────────────────────────── -->
   <section class="slide" data-notes="
 <li>Be blunt: nobody in an interview asked me to explain K-Means.</li>
 <li>They asked whether I could write SQL, and whether my code ran anywhere other than my laptop.</li>
@@ -951,7 +862,7 @@
     </div>
   </section>
 
-  <!-- 24 ──────────────────────────────────────────── -->
+  <!-- 21 ──────────────────────────────────────────── -->
   <section class="slide" data-notes="
 <li>My thesis is an example of this, but theirs can be a weekend project.</li>
 <li>Emphasise finished and running over ambitious and abandoned.</li>
@@ -979,7 +890,7 @@
     </div>
   </section>
 
-  <!-- 25 ──────────────────────────────────────────── -->
+  <!-- 22 ──────────────────────────────────────────── -->
   <section class="slide" data-notes="
 <li>This is the differentiator. Everyone can train a model; almost no junior can show idempotent ingestion.</li>
 <li>Tell them: put the unglamorous work where a reviewer can see it.</li>
@@ -1005,11 +916,11 @@
     </div>
   </section>
 
-  <!-- 26 ──────────────────────────────────────────── -->
+  <!-- 23 ──────────────────────────────────────────── -->
   <section class="slide" data-notes="
 <li>Give them the five-beat structure and say it works for any project.</li>
 <li>Insist on the failure story. Interviewers are listening for judgement, not features.</li>
-<li>Mine is the unseeded autoencoder — same data, same code, a different answer, and nothing in the pipeline told me. I told it to you twenty minutes ago exactly the way I would tell it in an interview.</li>">
+<li>Mine is the unseeded autoencoder: two refits on identical data returned thresholds 57 percent apart, so the same rate could be flagged under one artefact and cleared under the other. Nothing in the pipeline told me — I found it in the run log. Tell it in about forty seconds, the way you would in an interview.</li>">
     <div class="kicker">Part three &middot; Interviews</div>
     <h2>How to talk about what you built</h2>
     <div class="body">
@@ -1023,7 +934,7 @@
     </div>
   </section>
 
-  <!-- 27 ──────────────────────────────────────────── -->
+  <!-- 24 ──────────────────────────────────────────── -->
   <section class="slide" data-notes="
 <li>Useful for students still deciding. Keep it neutral, do not talk one down.</li>
 <li>Say what you have observed about roles advertised, but flag it as your own impression.</li>
@@ -1044,7 +955,7 @@
     </div>
   </section>
 
-  <!-- 28 ──────────────────────────────────────────── -->
+  <!-- 25 ──────────────────────────────────────────── -->
   <section class="slide" data-notes="
 <li>Push documentation over courses for tools — docs are current, courses are not.</li>
 <li>Kleppmann is the one book worth reading cover to cover for this field.</li>
@@ -1067,7 +978,7 @@
     </div>
   </section>
 
-  <!-- 29 ──────────────────────────────────────────── -->
+  <!-- 26 ──────────────────────────────────────────── -->
   <section class="slide" data-notes="
 <li>Close with something they can act on today. Keep it to three.</li>
 <li>Offer to look at their repo — and mean it. One or two will take you up on it.</li>">
@@ -1082,7 +993,7 @@
     </div>
   </section>
 
-  <!-- 30 ──────────────────────────────────────────── -->
+  <!-- 27 ──────────────────────────────────────────── -->
   <section class="slide" data-notes="
 <li>Leave this up during questions.</li>
 <li>Have the reproducibility story and the cross-vendor result ready — those are what they will ask about.</li>
@@ -1090,12 +1001,6 @@
     <div class="kicker">Thank you</div>
     <div class="end">
       <h1>Questions</h1>
-      <p class="lede">Happy to share the architecture diagrams, or look at your project repository if that would help.</p>
-      <div style="margin-top:clamp(24px,4vh,48px);font-size:clamp(13px,1.25vw,19px);line-height:1.6">
-        <b>Sive Jozi</b><br>
-        <span style="color:var(--muted)">Forex Technologies &middot; Capitec</span><br>
-        <span style="color:var(--muted)">MEng Data Science &middot; Stellenbosch University</span>
-      </div>
     </div>
   </section>
 
@@ -1110,7 +1015,7 @@
   <span class="rt">
     <span><kbd>&larr;</kbd> <kbd>&rarr;</kbd> navigate</span>
     <span><kbd>N</kbd> notes</span>
-    <span><b id="num">1</b> / <span id="tot">30</span></span>
+    <span><b id="num">1</b> / <span id="tot">27</span></span>
   </span>
 </div>
 
@@ -1209,3 +1114,4 @@
 </script>
 </body>
 </html>
+config
